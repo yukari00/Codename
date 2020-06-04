@@ -46,7 +46,7 @@ class SetRoomInfoFragment : Fragment() {
                 Status.JOIN_ROOM -> joinRoom(nickname, keyword)
             }
 
-            startActivity(Intent(activity, GameActivity::class.java))
+            startActivity(GameActivity.getLaunched(activity, keyword))
         }
     }
 
@@ -128,7 +128,6 @@ class SetRoomInfoFragment : Fragment() {
 
     companion object {
 
-        const val dbCollection = "COLLECTION"
         const val INTENT_KEY_STATUS = "INTENT_KEY_STATUS"
 
         @JvmStatic
