@@ -11,7 +11,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.android.synthetic.main.activity_game.*
 import java.util.*
 
-class GameActivity : AppCompatActivity() {
+class GameActivity : AppCompatActivity(), WaitingMembersFragment.OnFragmentWaitingListener {
 
     val database = FirebaseFirestore.getInstance()
     lateinit var list: MutableList<String?>
@@ -23,6 +23,12 @@ class GameActivity : AppCompatActivity() {
         val keyword = intent.extras?.getString(INTENT_KEY_KEYWORD)
 
         setCardWords(keyword!!)
+        waitMembersFragment()
+    }
+
+    private fun waitMembersFragment() {
+        supportFragmentManager.beginTransaction()
+            .add(R.id.container_game, WaitingMembersFragment()).commit()
     }
 
     private fun setCardWords(keyword: String) {
@@ -79,6 +85,12 @@ class GameActivity : AppCompatActivity() {
         fun getLaunched(fragment: FragmentActivity?, keyword: String) = Intent(fragment, GameActivity::class.java).apply {
             putExtra(INTENT_KEY_KEYWORD, keyword )
         }
+    }
+
+    //WaitingMembersFragment.OnFragmentWaitingListener
+    override fun OnMembersGathered() {
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.container_game, GameSettingFragment()).commit()
     }
 
 }
