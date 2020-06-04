@@ -68,7 +68,7 @@ class SetRoomInfoFragment : Fragment() {
     private fun createRoom(nickname: String, keyword: String) {
 
         val newRoom = hashMapOf("keyword" to keyword )
-        val memberList = hashMapOf("name" to nickname)
+        val memberList = Member(nickname)
         val list = WordsData("1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11",
         "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22",
             "23", "24", "25")

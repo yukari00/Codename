@@ -27,3 +27,9 @@ data class WordsData(
     val word24: String,
     val word25: String
 )
+
+data class Member(
+    val name: String,
+    var isHost: Boolean = false,
+    var team: Team = Team.RED
+)
