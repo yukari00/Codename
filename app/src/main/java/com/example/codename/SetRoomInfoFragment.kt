@@ -52,7 +52,7 @@ class SetRoomInfoFragment : Fragment() {
 
     private fun joinRoom(nickname: String, keyword: String) {
 
-        val memberList = hashMapOf("name" to nickname)
+        val memberList = Member(nickname)
 
         if(!ifKeywordAlreadyExist()){
             Toast.makeText(activity, "そのようなキーワードは存在しません。", Toast.LENGTH_SHORT).show()

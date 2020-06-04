@@ -79,14 +79,14 @@ class GameSettingFragment : Fragment() {
             if (ifYourHost!!) text_if_leader.setText("あなたはリーダーです") else text_if_leader.setText("あなたのチームのリーダーは${host}です")
 
             //Todo メンバーリスt取得
-            val membersQuery =
-                database.collection(dbCollection).document(keyword).collection("members").get()
-                    .addOnSuccessListener {
-                        for (document in it) {
-                            membersList.add(document.getString("name")!!)
-                        }
-                        text_my_team_members.setText(membersList[0])
+
+            database.collection(dbCollection).document(keyword).collection("members").get()
+                .addOnSuccessListener {
+                    for (document in it) {
+                        membersList.add(document.getString("name")!!)
                     }
+                    text_my_team_members.setText(membersList[0])
+                }
         }
 
     }
