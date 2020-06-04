@@ -9,6 +9,7 @@ import androidx.fragment.app.FragmentActivity
 import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.android.synthetic.main.activity_game.*
+import java.util.*
 
 class GameActivity : AppCompatActivity() {
 
@@ -32,8 +33,10 @@ class GameActivity : AppCompatActivity() {
 
             for(i in 1 .. 25 ){
                 list.add(it.getString("word$i"))
-                showWords()
+
             }
+            Collections.shuffle(list)
+            showWords()
 
         }
 
@@ -42,6 +45,30 @@ class GameActivity : AppCompatActivity() {
     private fun showWords() {
 
         button.setText(list[0])
+        button2.setText(list[1])
+        button3.setText(list[2])
+        button4.setText(list[3])
+        button5.setText(list[4])
+        button6.setText(list[5])
+        button7.setText(list[6])
+        button8.setText(list[7])
+        button9.setText(list[8])
+        button10.setText(list[9])
+        button11.setText(list[10])
+        button12.setText(list[11])
+        button13.setText(list[12])
+        button14.setText(list[13])
+        button15.setText(list[14])
+        button16.setText(list[15])
+        button17.setText(list[16])
+        button18.setText(list[17])
+        button19.setText(list[18])
+        button20.setText(list[19])
+        button21.setText(list[20])
+        button22.setText(list[21])
+        button23.setText(list[22])
+        button24.setText(list[23])
+        button25.setText(list[24])
 
     }
 
