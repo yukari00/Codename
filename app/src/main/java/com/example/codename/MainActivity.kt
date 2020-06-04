@@ -16,19 +16,25 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         btnCreateRoom.setOnClickListener {
-            //Todo Create a room
-            createRoom()
+
+            createRoom(Status.CREATE_ROOM)
 
         }
 
         btnJoinRoom.setOnClickListener {
-            createRoom()
+            createRoom(Status.JOIN_ROOM)
         }
+
     }
 
-    private fun createRoom() {
+    private fun joinRoom() {
 
-        supportFragmentManager.beginTransaction().add(R.id.container_type_room_info, SetRoomInfoFragment()).commit()
+    }
+
+    private fun createRoom(status: Status) {
+
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.container_type_room_info, SetRoomInfoFragment.newInstance(status)).commit()
 
 
     }

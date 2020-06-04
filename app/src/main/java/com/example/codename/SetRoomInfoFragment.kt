@@ -6,22 +6,21 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.android.synthetic.main.fragment_type_room_info.*
-
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
 
 class SetRoomInfoFragment : Fragment() {
 
     val database = FirebaseFirestore.getInstance()
 
-    private var param1: String? = null
-    private var param2: String? = null
-
+    private var status: Status? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        arguments?.let {
+            status = it.getSerializable(INTENT_KEY_STATUS) as Status
+        }
 
     }
 
@@ -29,29 +28,51 @@ class SetRoomInfoFragment : Fragment() {
         super.onActivityCreated(savedInstanceState)
 
         btn_go_next.setOnClickListener {
-            typeInfo()
+            typeInfo(status)
         }
+
     }
 
-    private fun typeInfo() {
+    private fun typeInfo(status: Status?) {
 
         val nickname = input_edit_nickname.text.toString()
         val keyword = input_edit_keyword.text.toString()
 
         if(createNickname(nickname, keyword)) {
 
-            val newRoom = hashMapOf("keyword" to keyword )
-            val memberList = hashMapOf("name" to nickname)
-            val list = hashMapOf("word1" to "apple", "word2" to "orange", "word3" to "grape")
+            when(status){
+                Status.CREATE_ROOM -> createRoom(nickname, keyword)
+                Status.JOIN_ROOM -> joinRoom(nickname, keyword)
+            }
+        }
+    }
 
-            database.collection(dbCollection).document(keyword).set(newRoom)
+    private fun joinRoom(nickname: String, keyword: String) {
+
+        val memberList = hashMapOf("name" to nickname)
+
+        if(!ifKeywordAlreadyExist()){
+            Toast.makeText(activity, "そのようなキーワードは存在しません。", Toast.LENGTH_SHORT).show()
+
+        } else {
             database.collection(dbCollection).document(keyword).collection("members").document(nickname)
                 .set(memberList)
-            database.collection(dbCollection).document(keyword).collection("words").document(keyword)
-                .set(list)
         }
 
 
+    }
+
+    private fun createRoom(nickname: String, keyword: String) {
+
+        val newRoom = hashMapOf("keyword" to keyword )
+        val memberList = hashMapOf("name" to nickname)
+        val list = hashMapOf("word1" to "apple", "word2" to "orange", "word3" to "grape")
+
+        database.collection(dbCollection).document(keyword).set(newRoom)
+        database.collection(dbCollection).document(keyword).collection("members").document(nickname)
+            .set(memberList)
+        database.collection(dbCollection).document(keyword).collection("words").document(keyword)
+            .set(list)
     }
 
     private fun createNickname(nickname: String, keyword: String): Boolean {
@@ -66,7 +87,7 @@ class SetRoomInfoFragment : Fragment() {
             return false
         }
 
-        if(!ifAlreadyExist()){
+        if(!ifKeywordAlreadyExist()){
             input_keyword.error = "このキーワードは使用できません。"
             return false
         }
@@ -75,7 +96,7 @@ class SetRoomInfoFragment : Fragment() {
 
     }
 
-    private fun ifAlreadyExist(): Boolean {
+    private fun ifKeywordAlreadyExist(): Boolean {
         //Todo キーワードが既に存在していないチェック
         return true
     }
@@ -103,13 +124,13 @@ class SetRoomInfoFragment : Fragment() {
     companion object {
 
         const val dbCollection = "COLLECTION"
+        const val INTENT_KEY_STATUS = "INTENT_KEY_STATUS"
 
         @JvmStatic
-        fun newInstance(param1: String, param2: String) =
+        fun newInstance(status: Status) =
             SetRoomInfoFragment().apply {
                 arguments = Bundle().apply {
-                    putString(ARG_PARAM1, param1)
-                    putString(ARG_PARAM2, param2)
+                    putSerializable(INTENT_KEY_STATUS, status)
                 }
             }
     }
