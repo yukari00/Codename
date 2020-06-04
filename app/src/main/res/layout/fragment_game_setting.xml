@@ -43,6 +43,7 @@
             android:text="あなたの仲間は" />
 
         <TextView
+            android:id="@+id/text_my_team_members"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:layout_marginStart="16dp"
@@ -73,6 +74,7 @@
             android:layout_weight="2" />
 
         <Button
+            android:id="@+id/btn_change_leader"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
@@ -81,6 +83,7 @@
     </LinearLayout>
 
     <Button
+        android:id="@+id/btn_team_random"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="ランダム"
@@ -88,7 +91,7 @@
         app:layout_constraintStart_toStartOf="parent" />
 
     <Button
-        android:id="@+id/button26"
+        android:id="@+id/btn_prepared"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="準備完了"

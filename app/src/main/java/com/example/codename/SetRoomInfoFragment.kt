@@ -46,7 +46,7 @@ class SetRoomInfoFragment : Fragment() {
                 Status.JOIN_ROOM -> joinRoom(nickname, keyword)
             }
 
-            startActivity(GameActivity.getLaunched(activity, keyword))
+            startActivity(GameActivity.getLaunched(activity, keyword, nickname))
         }
     }
 

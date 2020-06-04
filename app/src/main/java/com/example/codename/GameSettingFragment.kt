@@ -1,15 +1,17 @@
 package com.example.codename
 
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import com.google.firebase.firestore.DocumentReference
+import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.android.synthetic.main.fragment_game_setting.*
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
 
 /**
  * A simple [Fragment] subclass.
@@ -18,14 +20,18 @@ private const val ARG_PARAM2 = "param2"
  */
 class GameSettingFragment : Fragment() {
     // TODO: Rename and change types of parameters
-    private var param1: String? = null
-    private var param2: String? = null
+    private var keyword: String = ""
+    private var nickname: String = ""
+
+
+    val database = FirebaseFirestore.getInstance()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
-            param2 = it.getString(ARG_PARAM2)
+            keyword = it.getString(INTENT_KEY_KEYWORD)!!
+            nickname = it.getString(INTENT_KEY_NICKNAME)!!
+            Log.d("CCCCCCCCCCCCCCCCCCCC", "${nickname}")
         }
     }
 
@@ -37,22 +43,69 @@ class GameSettingFragment : Fragment() {
         return inflater.inflate(R.layout.fragment_game_setting, container, false)
     }
 
+    override fun onActivityCreated(savedInstanceState: Bundle?) {
+        super.onActivityCreated(savedInstanceState)
+
+        update()
+
+        btn_prepared.setOnClickListener {
+            //Todo 準備完了ボタン処理
+        }
+
+        btn_change_leader.setOnClickListener {
+            //Todo リーダー変更ボタンクリック処理
+        }
+
+        btn_team_random.setOnClickListener {
+            //Todo ランダムにチーム再編成
+        }
+    }
+
+    private fun update() {
+        var yourTeam: String? = "Team.RED"
+        var ifYourHost: Boolean? = false
+        val membersList: MutableList<String> = mutableListOf()
+
+        val docRef: DocumentReference =
+            database.collection(dbCollection).document(keyword).collection("members")
+                .document(nickname)
+        docRef.get().addOnSuccessListener {
+            yourTeam = it.getString("team")
+            ifYourHost = it.getBoolean("host")
+            Log.d("Check this", "yourTeam -> ${yourTeam}")
+            Log.d("Check this", "ifYourHost -> ${ifYourHost}")
+
+            //Todo ホストを取得
+            val host = "host"
+            if (yourTeam == "RED") text_tell_which_team.setText("あなたは赤チームです") else text_tell_which_team.setText(
+                "あなたは青チームです"
+            )
+            if (ifYourHost!!) text_if_leader.setText("あなたはリーダーです") else text_if_leader.setText("あなたのチームのリーダーは${host}です")
+
+            //Todo メンバーリスt取得
+            val membersQuery =
+                database.collection(dbCollection).document(keyword).collection("members").get()
+                    .addOnSuccessListener {
+                        for (document in it) {
+                            membersList.add(document.getString("name")!!)
+                        }
+                        text_my_team_members.setText(membersList[0])
+                    }
+        }
+
+    }
+
     companion object {
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
-         * @return A new instance of fragment GameSettingFragment.
-         */
-        // TODO: Rename and change types and number of parameters
+
+        const val INTENT_KEY_KEYWORD = "keyword"
+        const val INTENT_KEY_NICKNAME = "nickname"
+
         @JvmStatic
-        fun newInstance(param1: String, param2: String) =
+        fun newInstance(keyword: String, nickname: String) =
             GameSettingFragment().apply {
                 arguments = Bundle().apply {
-                    putString(ARG_PARAM1, param1)
-                    putString(ARG_PARAM2, param2)
+                    putString(INTENT_KEY_KEYWORD, keyword)
+                    putString(INTENT_KEY_NICKNAME, nickname)
                 }
             }
     }

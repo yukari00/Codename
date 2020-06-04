@@ -16,13 +16,22 @@ class GameActivity : AppCompatActivity(), WaitingMembersFragment.OnFragmentWaiti
     val database = FirebaseFirestore.getInstance()
     lateinit var list: MutableList<String?>
 
+    var keyword: String = ""
+    var nickname: String = ""
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_game)
 
-        val keyword = intent.extras?.getString(INTENT_KEY_KEYWORD)
+        if (intent.extras == null){
+            //Todo エラー処理
+            finish()
+        }
 
-        setCardWords(keyword!!)
+        keyword = intent.extras!!.getString(INTENT_KEY_KEYWORD)!!
+        nickname = intent.extras!!.getString(INTENT_KEY_NICKNAME)!!
+
+        setCardWords(keyword)
         waitMembersFragment()
     }
 
@@ -81,16 +90,19 @@ class GameActivity : AppCompatActivity(), WaitingMembersFragment.OnFragmentWaiti
     companion object{
 
         const val INTENT_KEY_KEYWORD = "keyword"
+        const val INTENT_KEY_NICKNAME = "nickname"
 
-        fun getLaunched(fragment: FragmentActivity?, keyword: String) = Intent(fragment, GameActivity::class.java).apply {
+        fun getLaunched(fragment: FragmentActivity?, keyword: String, nickname: String) = Intent(fragment, GameActivity::class.java).apply {
             putExtra(INTENT_KEY_KEYWORD, keyword )
+            putExtra(INTENT_KEY_NICKNAME, nickname)
         }
     }
 
     //WaitingMembersFragment.OnFragmentWaitingListener
     override fun OnMembersGathered() {
+        //Todo チーム編成（ランダム）
         supportFragmentManager.beginTransaction()
-            .replace(R.id.container_game, GameSettingFragment()).commit()
+            .replace(R.id.container_game, GameSettingFragment.newInstance(keyword, nickname)).commit()
     }
 
 }
