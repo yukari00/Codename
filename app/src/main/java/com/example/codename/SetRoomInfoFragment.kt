@@ -1,6 +1,7 @@
 package com.example.codename
 
 import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -44,6 +45,8 @@ class SetRoomInfoFragment : Fragment() {
                 Status.CREATE_ROOM -> createRoom(nickname, keyword)
                 Status.JOIN_ROOM -> joinRoom(nickname, keyword)
             }
+
+            startActivity(Intent(activity, GameActivity::class.java))
         }
     }
 
@@ -66,7 +69,9 @@ class SetRoomInfoFragment : Fragment() {
 
         val newRoom = hashMapOf("keyword" to keyword )
         val memberList = hashMapOf("name" to nickname)
-        val list = hashMapOf("word1" to "apple", "word2" to "orange", "word3" to "grape")
+        val list = WordsData("1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11",
+        "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22",
+            "23", "24", "25")
 
         database.collection(dbCollection).document(keyword).set(newRoom)
         database.collection(dbCollection).document(keyword).collection("members").document(nickname)
