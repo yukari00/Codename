@@ -22,6 +22,7 @@ class GameSettingFragment : Fragment() {
     private var keyword: String = ""
     private var nickname: String = ""
 
+    var isPrepared: Boolean? = false
 
     val database = FirebaseFirestore.getInstance()
 
@@ -47,7 +48,17 @@ class GameSettingFragment : Fragment() {
         update()
 
         btn_prepared.setOnClickListener {
-            //Todo 準備完了ボタン処理
+            //Todo 準備完了ボタン処
+            when(isPrepared){
+                false -> {
+                    btn_prepared.setText("待機中")
+                    isPrepared = true
+                }
+                true -> {
+                    btn_prepared.setText("準備完了")
+                    isPrepared = false
+                }
+            }
         }
 
         btn_change_leader.setOnClickListener {
@@ -57,6 +68,7 @@ class GameSettingFragment : Fragment() {
         btn_team_random.setOnClickListener {
             //Todo ランダムにチーム再編成
         }
+
     }
 
     private fun update() {
@@ -64,12 +76,15 @@ class GameSettingFragment : Fragment() {
         var ifYourHost: Boolean? = false
         val membersList: MutableList<String> = mutableListOf()
 
+
+        //メンバー情報取得
         val docRef: DocumentReference =
             database.collection(dbCollection).document(keyword).collection("members")
                 .document(nickname)
         docRef.get().addOnSuccessListener {
             yourTeam = it.getString("team")
             ifYourHost = it.getBoolean("host")
+            isPrepared = it.getBoolean("prepared")
 
             //Todo ホストを取得
             val host = "host"
@@ -87,7 +102,12 @@ class GameSettingFragment : Fragment() {
                     }
                     text_my_team_members.setText(membersList[0])
                 }
+
         }
+
+    }
+
+    private fun buttonClick() {
 
     }
 
