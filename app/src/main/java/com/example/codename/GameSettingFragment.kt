@@ -11,6 +11,7 @@ import android.widget.ArrayAdapter
 import android.widget.Spinner
 import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.protobuf.Empty
 import kotlinx.android.synthetic.main.fragment_game_setting.*
 import java.util.*
 
@@ -70,12 +71,28 @@ class GameSettingFragment : Fragment() {
     }
 
     private fun update() {
-        var yourTeam: String? = "Team.RED"
-        var ifYourHost: Boolean? = false
+
         val membersList: MutableList<String> = mutableListOf()
 
+        database.collection(dbCollection).document(keyword).collection("members").get()
+            .addOnSuccessListener {
+                for (document in it) {
+                    membersList.add(document.getString("name")!!)
+                }
+                text_my_team_members.setText(membersList[0])
 
-        //メンバー情報取得
+                setSpinner(membersList)
+                splitMembersToTwoTeam(membersList, nickname)
+                individualsInfo()
+
+            }
+    }
+
+    private fun individualsInfo() {
+
+        var yourTeam: String? = ""
+        var ifYourHost: Boolean? = false
+
         val docRef: DocumentReference =
             database.collection(dbCollection).document(keyword).collection("members")
                 .document(nickname)
@@ -84,86 +101,110 @@ class GameSettingFragment : Fragment() {
             ifYourHost = it.getBoolean("host")
             isPrepared = it.getBoolean("prepared")
 
-            //Todo ホストを取得
-            val host = "host"
-            if (yourTeam == "RED") text_tell_which_team.setText("あなたは赤チームです") else text_tell_which_team.setText(
-                "あなたは青チームです"
-            )
-            if (ifYourHost!!) text_if_leader.setText("あなたはリーダーです") else text_if_leader.setText("あなたのチームのリーダーは${host}です")
+            //ホストを取得
+            showHost(ifYourHost)
+            if (yourTeam == "RED") text_tell_which_team.setText("あなたは赤チームです") else text_tell_which_team.setText("あなたは青チームです")
+        }
 
-            //Todo メンバーリスt取得
 
-            database.collection(dbCollection).document(keyword).collection("members").get()
-                .addOnSuccessListener {
-                    for (document in it) {
-                        membersList.add(document.getString("name")!!)
+        }
+
+    private fun showHost(ifYourHost: Boolean?) {
+        var host: String? = ""
+        database.collection(dbCollection).document(keyword).collection("members")
+            .whereEqualTo("host", true).get().addOnSuccessListener {
+                host = it.documents.first().getString("name")
+                if (ifYourHost!!) text_if_leader.setText("あなたはリーダーです") else text_if_leader.setText("あなたのチームのリーダーは${host}です")
+
+            }
+    }
+
+    private fun splitMembersToTwoTeam(membersList: MutableList<String>, nickname: String) {
+
+            Collections.shuffle(membersList)
+
+            val teamRed: MutableList<String> = mutableListOf()
+            val teamBlue: MutableList<String> = mutableListOf()
+
+            val memberNum = membersList.size / 2
+            for (i in 0..memberNum - 1) {
+                teamRed.add(membersList[i])
+            }
+            for (j in memberNum..membersList.size - 1) {
+                teamBlue.add(membersList[j])
+            }
+
+            if (!teamRed.filter { it.equals(nickname) }.isEmpty()) {
+                val memberList = Member(nickname, team = Team.RED)
+                database.collection(dbCollection).document(keyword).collection("members")
+                    .document(nickname)
+                    .set(memberList)
+
+            } else {
+                val memberList = Member(nickname, team = Team.BLUE)
+                database.collection(dbCollection).document(keyword).collection("members")
+                    .document(nickname)
+                    .set(memberList)
+            }
+
+            text_red_mem_num.setText("赤チームの人数は${teamRed.size}人です")
+            text_blue_mem_num.setText("青チームの人数は${teamBlue.size}人です")
+
+        }
+
+        private fun setSpinner(membersList: MutableList<String>) {
+
+            var host: String = ""
+            val adapter =
+                ArrayAdapter(activity!!, android.R.layout.simple_spinner_item, membersList)
+            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+            spinner.adapter = adapter
+            spinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+                override fun onNothingSelected(parent: AdapterView<*>?) {
+                    //何もクリックしないときの処理
+                }
+
+                override fun onItemSelected(
+                    parent: AdapterView<*>?,
+                    view: View?,
+                    position: Int,
+                    id: Long
+                ) {
+                    val spinnerParent = parent as Spinner
+                    val selectedMember = spinnerParent.selectedItem as String
+                    host = selectedMember
+
+                }
+            }
+
+            btn_change_leader.setOnClickListener {
+
+                lateinit var memberList: Member
+
+                when (host) {
+                    nickname -> memberList = Member(nickname, isHost = true)
+                    else -> memberList = Member(nickname, isHost = false)
+                }
+                database.collection(dbCollection).document(keyword).collection("members")
+                    .document(nickname)
+                    .set(memberList)
+
+                text_if_leader.setText("あなたのチームのリーダーは${host}です")
+            }
+        }
+
+        companion object {
+
+            const val INTENT_KEY_KEYWORD = "keyword"
+            const val INTENT_KEY_NICKNAME = "nickname"
+
+            @JvmStatic
+            fun newInstance(keyword: String, nickname: String) =
+                GameSettingFragment().apply {
+                    arguments = Bundle().apply {
+                        putString(INTENT_KEY_KEYWORD, keyword)
+                        putString(INTENT_KEY_NICKNAME, nickname)
                     }
-                    text_my_team_members.setText(membersList[0])
-                    //スピナー設定
-                    setSpinner(membersList)
-                    SplitMembersToTwoTeam(membersList)
-
                 }
         }
-
     }
-
-    private fun SplitMembersToTwoTeam(membersList: MutableList<String>) {
-
-        Collections.shuffle(membersList)
-
-        val teamRed: MutableList<String> = mutableListOf()
-        val teamBlue: MutableList<String> = mutableListOf()
-
-        val memberNum = membersList.size / 2
-        for (i in 0..memberNum - 1) {
-            teamRed.add(membersList[i])
-        }
-        for (j in memberNum ..membersList.size - 1) {
-            teamBlue.add(membersList[j])
-        }
-
-        text_red_mem_num.setText("赤チームの人数は${teamRed.size}人です")
-        text_blue_mem_num.setText("青チームの人数は${teamBlue.size}人です")
-
-    }
-
-
-    private fun setSpinner(membersList: MutableList<String>) {
-        val adapter = ArrayAdapter(activity!!, android.R.layout.simple_spinner_item, membersList)
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        spinner.adapter = adapter
-        spinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onNothingSelected(parent: AdapterView<*>?) {
-                TODO("Not yet implemented")
-            }
-
-            override fun onItemSelected(
-                parent: AdapterView<*>?,
-                view: View?,
-                position: Int,
-                id: Long
-            ) {
-                val spinnerParent = parent as Spinner
-                val selectedMember = spinnerParent.selectedItem as String
-                text_if_leader.setText("あなたのチームのリーダーは${selectedMember}です")
-            }
-
-        }
-    }
-
-    companion object {
-
-        const val INTENT_KEY_KEYWORD = "keyword"
-        const val INTENT_KEY_NICKNAME = "nickname"
-
-        @JvmStatic
-        fun newInstance(keyword: String, nickname: String) =
-            GameSettingFragment().apply {
-                arguments = Bundle().apply {
-                    putString(INTENT_KEY_KEYWORD, keyword)
-                    putString(INTENT_KEY_NICKNAME, nickname)
-                }
-            }
-    }
-}

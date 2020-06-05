@@ -9,5 +9,5 @@ enum class Status{
 
 enum class Team {
     RED,
-    BULE
+    BLUE
 }
