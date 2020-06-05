@@ -98,32 +98,35 @@ class GameSettingFragment : Fragment() {
                         membersList.add(document.getString("name")!!)
                     }
                     text_my_team_members.setText(membersList[0])
+                    //スピナー設定
+                    setSpinner(membersList)
 
-                    //Todo Spinner設定
-                    val adapter = ArrayAdapter(activity!!, android.R.layout.simple_spinner_item, membersList)
-                    adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-                    spinner.adapter = adapter
-                    spinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener{
-                        override fun onNothingSelected(parent: AdapterView<*>?) {
-                            TODO("Not yet implemented")
-                        }
-
-                        override fun onItemSelected(
-                            parent: AdapterView<*>?,
-                            view: View?,
-                            position: Int,
-                            id: Long
-                        ) {
-                            val spinnerParent = parent as Spinner
-                            val selectedMember = spinnerParent.selectedItem as String
-                            text_if_leader.setText("あなたのチームのリーダーは${selectedMember}です")
-                        }
-
-                    }
                 }
-
         }
 
+    }
+
+    private fun setSpinner(membersList: MutableList<String>) {
+        val adapter = ArrayAdapter(activity!!, android.R.layout.simple_spinner_item, membersList)
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        spinner.adapter = adapter
+        spinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onNothingSelected(parent: AdapterView<*>?) {
+                TODO("Not yet implemented")
+            }
+
+            override fun onItemSelected(
+                parent: AdapterView<*>?,
+                view: View?,
+                position: Int,
+                id: Long
+            ) {
+                val spinnerParent = parent as Spinner
+                val selectedMember = spinnerParent.selectedItem as String
+                text_if_leader.setText("あなたのチームのリーダーは${selectedMember}です")
+            }
+
+        }
     }
 
     companion object {
