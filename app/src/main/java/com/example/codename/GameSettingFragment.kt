@@ -79,7 +79,6 @@ class GameSettingFragment : Fragment() {
                 for (document in it) {
                     membersList.add(document.getString("name")!!)
                 }
-                text_my_team_members.setText(membersList[0])
 
                 setSpinner(membersList)
                 splitMembersToTwoTeam(membersList, nickname)
@@ -121,42 +120,44 @@ class GameSettingFragment : Fragment() {
 
     private fun splitMembersToTwoTeam(membersList: MutableList<String>, nickname: String) {
 
-            Collections.shuffle(membersList)
+        Collections.shuffle(membersList)
 
-            val teamRed: MutableList<String> = mutableListOf()
-            val teamBlue: MutableList<String> = mutableListOf()
+        val teamRed: MutableList<String> = mutableListOf()
+        val teamBlue: MutableList<String> = mutableListOf()
 
-            val memberNum = membersList.size / 2
-            for (i in 0..memberNum - 1) {
-                teamRed.add(membersList[i])
-            }
-            for (j in memberNum..membersList.size - 1) {
-                teamBlue.add(membersList[j])
-            }
-
-            if (!teamRed.filter { it.equals(nickname) }.isEmpty()) {
-                val memberList = Member(nickname, team = Team.RED)
-                database.collection(dbCollection).document(keyword).collection("members")
-                    .document(nickname)
-                    .set(memberList)
-
-            } else {
-                val memberList = Member(nickname, team = Team.BLUE)
-                database.collection(dbCollection).document(keyword).collection("members")
-                    .document(nickname)
-                    .set(memberList)
-            }
-
-            text_red_mem_num.setText("赤チームの人数は${teamRed.size}人です")
-            text_blue_mem_num.setText("青チームの人数は${teamBlue.size}人です")
-
+        val memberNum = membersList.size / 2
+        for (i in 0..memberNum - 1) {
+            teamRed.add(membersList[i])
+        }
+        for (j in memberNum..membersList.size - 1) {
+            teamBlue.add(membersList[j])
         }
 
-        private fun setSpinner(membersList: MutableList<String>) {
+        if (!teamRed.filter { it.equals(nickname) }.isEmpty()) {
+            val memberList = Member(nickname, team = Team.RED)
+            database.collection(dbCollection).document(keyword).collection("members")
+                .document(nickname)
+                .set(memberList)
+            text_my_team_members.setText(teamRed.joinToString())
+        } else {
+            val memberList = Member(nickname, team = Team.BLUE)
+            database.collection(dbCollection).document(keyword).collection("members")
+                .document(nickname)
+                .set(memberList)
+            text_my_team_members.setText(teamBlue.joinToString())
+        }
 
-            var host: String = ""
-            val adapter =
-                ArrayAdapter(activity!!, android.R.layout.simple_spinner_item, membersList)
+
+        text_red_mem_num.setText("赤チームの人数は${teamRed.size}人です")
+        text_blue_mem_num.setText("青チームの人数は${teamBlue.size}人です")
+
+    }
+
+    private fun setSpinner(membersList: MutableList<String>) {
+
+        var host: String = ""
+        val adapter =
+            ArrayAdapter(activity!!, android.R.layout.simple_spinner_item, membersList)
             adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
             spinner.adapter = adapter
             spinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
