@@ -37,7 +37,8 @@ class GameActivity : AppCompatActivity(), WaitingMembersFragment.OnFragmentWaiti
 
     private fun waitMembersFragment() {
         supportFragmentManager.beginTransaction()
-            .add(R.id.container_game, WaitingMembersFragment()).commit()
+            .add(R.id.container_game, WaitingMembersFragment.newInstance(keyword, nickname)).commit()
+
     }
 
     private fun setCardWords(keyword: String) {

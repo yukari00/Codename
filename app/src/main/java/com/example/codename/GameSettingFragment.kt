@@ -60,10 +60,6 @@ class GameSettingFragment : Fragment() {
             }
         }
 
-        btn_change_leader.setOnClickListener {
-            //Todo リーダー変更ボタンクリック処理
-        }
-
         btn_team_random.setOnClickListener {
             //Todo ランダムにチーム再編成
         }
