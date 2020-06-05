@@ -1,24 +1,21 @@
 package com.example.codename
 
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.AdapterView
+import android.widget.ArrayAdapter
+import android.widget.Spinner
 import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.android.synthetic.main.fragment_game_setting.*
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
 
-/**
- * A simple [Fragment] subclass.
- * Use the [GameSettingFragment.newInstance] factory method to
- * create an instance of this fragment.
- */
 class GameSettingFragment : Fragment() {
-    // TODO: Rename and change types of parameters
+
     private var keyword: String = ""
     private var nickname: String = ""
 
@@ -101,13 +98,31 @@ class GameSettingFragment : Fragment() {
                         membersList.add(document.getString("name")!!)
                     }
                     text_my_team_members.setText(membersList[0])
+
+                    //Todo Spinner設定
+                    val adapter = ArrayAdapter(activity!!, android.R.layout.simple_spinner_item, membersList)
+                    adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+                    spinner.adapter = adapter
+                    spinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener{
+                        override fun onNothingSelected(parent: AdapterView<*>?) {
+                            TODO("Not yet implemented")
+                        }
+
+                        override fun onItemSelected(
+                            parent: AdapterView<*>?,
+                            view: View?,
+                            position: Int,
+                            id: Long
+                        ) {
+                            val spinnerParent = parent as Spinner
+                            val selectedMember = spinnerParent.selectedItem as String
+                            text_if_leader.setText("あなたのチームのリーダーは${selectedMember}です")
+                        }
+
+                    }
                 }
 
         }
-
-    }
-
-    private fun buttonClick() {
 
     }
 
