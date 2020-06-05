@@ -12,6 +12,7 @@ import android.widget.Spinner
 import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.android.synthetic.main.fragment_game_setting.*
+import java.util.*
 
 
 class GameSettingFragment : Fragment() {
@@ -100,11 +101,33 @@ class GameSettingFragment : Fragment() {
                     text_my_team_members.setText(membersList[0])
                     //スピナー設定
                     setSpinner(membersList)
+                    SplitMembersToTwoTeam(membersList)
 
                 }
         }
 
     }
+
+    private fun SplitMembersToTwoTeam(membersList: MutableList<String>) {
+
+        Collections.shuffle(membersList)
+
+        val teamRed: MutableList<String> = mutableListOf()
+        val teamBlue: MutableList<String> = mutableListOf()
+
+        val memberNum = membersList.size / 2
+        for (i in 0..memberNum - 1) {
+            teamRed.add(membersList[i])
+        }
+        for (j in memberNum ..membersList.size - 1) {
+            teamBlue.add(membersList[j])
+        }
+
+        text_red_mem_num.setText("赤チームの人数は${teamRed.size}人です")
+        text_blue_mem_num.setText("青チームの人数は${teamBlue.size}人です")
+
+    }
+
 
     private fun setSpinner(membersList: MutableList<String>) {
         val adapter = ArrayAdapter(activity!!, android.R.layout.simple_spinner_item, membersList)
