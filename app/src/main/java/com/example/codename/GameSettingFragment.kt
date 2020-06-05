@@ -108,9 +108,12 @@ class GameSettingFragment : Fragment() {
         var host: String? = ""
         database.collection(dbCollection).document(keyword).collection("members")
             .whereEqualTo("host", true).get().addOnSuccessListener {
-                host = it.documents.first().getString("name")
-                if (ifYourHost!!) text_if_leader.setText("あなたはリーダーです") else text_if_leader.setText("あなたのチームのリーダーは${host}です")
-
+                if(it.isEmpty){
+                    text_if_leader.setText("話し合いでチームリーダを決めてください")
+                }else{
+                    host = it.documents.first().getString("name")
+                    if (ifYourHost!!) text_if_leader.setText("あなたはリーダーです") else text_if_leader.setText("あなたのチームのリーダーは${host}です")
+                }
             }
     }
 

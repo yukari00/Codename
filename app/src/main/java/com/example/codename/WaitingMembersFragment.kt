@@ -62,6 +62,9 @@ class WaitingMembersFragment : Fragment() {
                     memberList.add(document.getString("name")!!)
                 }
                 text_member_join.setText(memberList.joinToString())
+                text_member_join_num.setText("現在参加人数は${memberList.size}人です")
+
+                btn_game_start.isEnabled = memberList.size >= 4
             }
 
         btn_game_start.setOnClickListener {
