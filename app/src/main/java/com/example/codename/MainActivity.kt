@@ -26,20 +26,22 @@ class MainActivity : AppCompatActivity() {
 
         btnCreateRoom.setOnClickListener {
 
-            createRoom(Status.CREATE_ROOM)
+            status = Status.CREATE_ROOM
+            createRoom()
 
         }
 
         btnJoinRoom.setOnClickListener {
-            createRoom(Status.JOIN_ROOM)
+            status = Status.JOIN_ROOM
+            createRoom()
         }
 
     }
 
-    private fun createRoom(status: Status) {
+    private fun createRoom() {
 
         supportFragmentManager.beginTransaction()
-            .replace(R.id.container_type_room_info, SetRoomInfoFragment.newInstance(status)).commit()
+            .replace(R.id.container_type_room_info, SetRoomInfoFragment()).commit()
 
 
     }

@@ -39,8 +39,11 @@ class GameActivity : AppCompatActivity(), WaitingMembersFragment.OnFragmentWaiti
 
         keyword = intent.extras!!.getString(INTENT_KEY_KEYWORD)!!
         nickname = intent.extras!!.getString(INTENT_KEY_NICKNAME)!!
-        
-        importWordsFromCSV()
+
+        if(status == Status.CREATE_ROOM){
+            importWordsFromCSV()
+        }
+
         setCardWords(keyword)
         waitMembersFragment()
     }

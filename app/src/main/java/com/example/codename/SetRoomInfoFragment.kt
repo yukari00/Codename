@@ -16,12 +16,10 @@ class SetRoomInfoFragment : Fragment() {
 
     val database = FirebaseFirestore.getInstance()
 
-    private var status: Status? = null
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let {
-            status = it.getSerializable(INTENT_KEY_STATUS) as Status
+
         }
 
     }
@@ -30,19 +28,19 @@ class SetRoomInfoFragment : Fragment() {
         super.onActivityCreated(savedInstanceState)
 
         btn_go_next.setOnClickListener {
-            typeInfo(status)
+            typeInfo()
         }
 
     }
 
-    private fun typeInfo(status: Status?) {
+    private fun typeInfo() {
 
         val nickname = input_edit_nickname.text.toString()
         val keyword = input_edit_keyword.text.toString()
 
 
         if (createNickname(nickname, keyword)) {
-            ifKeywordAlreadyExist(keyword, nickname, status)
+            ifKeywordAlreadyExist(keyword, nickname)
         }
     }
 
@@ -81,7 +79,7 @@ class SetRoomInfoFragment : Fragment() {
 
     }
 
-    private fun ifKeywordAlreadyExist(keyword: String, nickname: String, status: Status?) {
+    private fun ifKeywordAlreadyExist(keyword: String, nickname: String) {
         //Todo キーワードが既に存在していないチェック
         database.collection(dbCollection).whereEqualTo("keyword", keyword).get()
             .addOnSuccessListener {

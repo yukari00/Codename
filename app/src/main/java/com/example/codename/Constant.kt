@@ -13,3 +13,5 @@ enum class Team {
 }
 
 var isDataFinished = false
+
+var status: Status = Status.JOIN_ROOM
