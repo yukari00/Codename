@@ -75,8 +75,7 @@ class GameSettingFragment : Fragment() {
                 for (document in it) {
                     membersList.add(document.getString("name")!!)
                 }
-
-                setSpinner(membersList)
+                
                 splitMembersToTwoTeam(membersList, nickname)
                 individualsInfo()
 
@@ -123,6 +122,7 @@ class GameSettingFragment : Fragment() {
 
         val teamRed: MutableList<String> = mutableListOf()
         val teamBlue: MutableList<String> = mutableListOf()
+        var isYourTeam: Team
 
         val memberNum = membersList.size / 2
         for (i in 0..memberNum - 1) {
@@ -137,26 +137,32 @@ class GameSettingFragment : Fragment() {
             database.collection(dbCollection).document(keyword).collection("members")
                 .document(nickname)
                 .set(memberList)
+            isYourTeam = Team.RED
             text_my_team_members.setText(teamRed.joinToString())
         } else {
             val memberList = Member(nickname, team = Team.BLUE)
             database.collection(dbCollection).document(keyword).collection("members")
                 .document(nickname)
                 .set(memberList)
+            isYourTeam = Team.BLUE
             text_my_team_members.setText(teamBlue.joinToString())
         }
 
+        setSpinner(teamRed, teamBlue, isYourTeam)
 
         text_red_mem_num.setText("赤チームの人数は${teamRed.size}人です")
         text_blue_mem_num.setText("青チームの人数は${teamBlue.size}人です")
 
     }
 
-    private fun setSpinner(membersList: MutableList<String>) {
+    private fun setSpinner(teamRed: MutableList<String>, teamBlue: MutableList<String>, isYourTeam: Team) {
 
         var host: String = ""
         val adapter =
-            ArrayAdapter(activity!!, android.R.layout.simple_spinner_item, membersList)
+            when(isYourTeam){
+                Team.RED -> ArrayAdapter(activity!!, android.R.layout.simple_spinner_item, teamRed)
+                Team.BLUE ->  ArrayAdapter(activity!!, android.R.layout.simple_spinner_item, teamBlue)
+            }
             adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
             spinner.adapter = adapter
             spinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
