@@ -1,5 +1,6 @@
 package com.example.codename
 
+import android.content.Context
 import android.os.Bundle
 import android.util.Log
 import androidx.fragment.app.Fragment
@@ -27,6 +28,13 @@ class GameSettingFragment : Fragment() {
 
     val database = FirebaseFirestore.getInstance()
 
+    var listener: OnFragmentGameSettingListener? = null
+
+    interface OnFragmentGameSettingListener {
+
+        fun GameStart()
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let {
@@ -50,7 +58,7 @@ class GameSettingFragment : Fragment() {
 
         btn_prepared.setOnClickListener {
             //Todo 準備完了ボタン処
-            when(isPrepared){
+            when (isPrepared) {
                 false -> {
                     btn_prepared.setText("待機中")
                     isPrepared = true
@@ -61,6 +69,7 @@ class GameSettingFragment : Fragment() {
                 }
             }
 
+            listener?.GameStart()
             getFragmentManager()?.beginTransaction()?.remove(this)?.commit()
         }
 
@@ -69,6 +78,21 @@ class GameSettingFragment : Fragment() {
         }
 
     }
+
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        if (context is OnFragmentGameSettingListener) {
+            listener = context
+        } else {
+            throw RuntimeException(context.toString() + " must implement OnListFragmentInteractionListener")
+        }
+    }
+
+    override fun onDetach() {
+        super.onDetach()
+        listener = null
+    }
+
 
     private fun update() {
 
@@ -88,20 +112,20 @@ class GameSettingFragment : Fragment() {
                 val teamBlue: MutableList<String> = mutableListOf()
                 database.collection(dbCollection).document(keyword).collection("members")
                     .whereEqualTo("team", "RED").get().addOnSuccessListener {
-                    for (document in it) {
-                        teamRed.add(document.getString("name")!!)
-                    }
-
-                    database.collection(dbCollection).document(keyword).collection("members")
-                        .whereEqualTo("team", "BLUE").get().addOnSuccessListener {
                         for (document in it) {
-                            teamBlue.add(document.getString("name")!!)
+                            teamRed.add(document.getString("name")!!)
                         }
 
-                        setSpinner(teamRed, teamBlue)
-                        individualsInfo(teamRed, teamBlue)
+                        database.collection(dbCollection).document(keyword).collection("members")
+                            .whereEqualTo("team", "BLUE").get().addOnSuccessListener {
+                                for (document in it) {
+                                    teamBlue.add(document.getString("name")!!)
+                                }
+
+                                setSpinner(teamRed, teamBlue)
+                                individualsInfo(teamRed, teamBlue)
+                            }
                     }
-                }
             }
     }
 
@@ -112,7 +136,7 @@ class GameSettingFragment : Fragment() {
 
         var isYourHost: Boolean? = false
 
-        val isMyTeam = if(teamRed.contains(nickname)){
+        val isMyTeam = if (teamRed.contains(nickname)) {
             Team.RED
         } else Team.BLUE
 
@@ -126,19 +150,23 @@ class GameSettingFragment : Fragment() {
             //ホストを取得
             showHost(isYourHost)
         }
-        if (isMyTeam == Team.RED) text_tell_which_team.setText("あなたは赤チームです") else text_tell_which_team.setText("あなたは青チームです")
+        if (isMyTeam == Team.RED) text_tell_which_team.setText("あなたは赤チームです") else text_tell_which_team.setText(
+            "あなたは青チームです"
+        )
 
-        }
+    }
 
     private fun showHost(ifYourHost: Boolean?) {
         var host: String? = ""
         database.collection(dbCollection).document(keyword).collection("members")
             .whereEqualTo("host", true).get().addOnSuccessListener {
-                if(it.isEmpty){
+                if (it.isEmpty) {
                     text_if_leader.setText("話し合いでチームリーダを決めてください")
-                }else{
+                } else {
                     host = it.documents.first().getString("name")
-                    if (ifYourHost!!) text_if_leader.setText("あなたはリーダーです") else text_if_leader.setText("あなたのチームのリーダーは${host}です")
+                    if (ifYourHost!!) text_if_leader.setText("あなたはリーダーです") else text_if_leader.setText(
+                        "あなたのチームのリーダーは${host}です"
+                    )
                 }
             }
     }
@@ -160,12 +188,14 @@ class GameSettingFragment : Fragment() {
 
         teamRed.forEach {
             val memberInfo = Member(it, team = Team.RED)
-            database.collection(dbCollection).document(keyword).collection("members").document(it).set(memberInfo)
+            database.collection(dbCollection).document(keyword).collection("members").document(it)
+                .set(memberInfo)
         }
 
         teamBlue.forEach {
             val memberInfo = Member(it, team = Team.BLUE)
-            database.collection(dbCollection).document(keyword).collection("members").document(it).set(memberInfo)
+            database.collection(dbCollection).document(keyword).collection("members").document(it)
+                .set(memberInfo)
         }
 
         setSpinner(teamRed, teamBlue)
@@ -180,69 +210,73 @@ class GameSettingFragment : Fragment() {
 
         var host: String = ""
 
-        val isMyTeam = if(teamRed.contains(nickname)){
+        val isMyTeam = if (teamRed.contains(nickname)) {
             Team.RED
         } else Team.BLUE
 
         val adapter =
-            when(isMyTeam){
+            when (isMyTeam) {
                 Team.RED -> ArrayAdapter(activity!!, android.R.layout.simple_spinner_item, teamRed)
-                Team.BLUE ->  ArrayAdapter(activity!!, android.R.layout.simple_spinner_item, teamBlue)
+                Team.BLUE -> ArrayAdapter(
+                    activity!!,
+                    android.R.layout.simple_spinner_item,
+                    teamBlue
+                )
             }
-            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-            spinner.adapter = adapter
-            spinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-                override fun onNothingSelected(parent: AdapterView<*>?) {
-                    //何もクリックしないときの処理
-                }
-
-                override fun onItemSelected(
-                    parent: AdapterView<*>?,
-                    view: View?,
-                    position: Int,
-                    id: Long
-                ) {
-                    val spinnerParent = parent as Spinner
-                    val selectedMember = spinnerParent.selectedItem as String
-                    host = selectedMember
-
-                }
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        spinner.adapter = adapter
+        spinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onNothingSelected(parent: AdapterView<*>?) {
+                //何もクリックしないときの処理
             }
 
-            btn_change_leader.setOnClickListener {
+            override fun onItemSelected(
+                parent: AdapterView<*>?,
+                view: View?,
+                position: Int,
+                id: Long
+            ) {
+                val spinnerParent = parent as Spinner
+                val selectedMember = spinnerParent.selectedItem as String
+                host = selectedMember
 
-                val newHost = Member(host, isHost = true)
+            }
+        }
 
-                database.collection(dbCollection).document(keyword).collection("members")
-                    .document(nickname)
-                    .set(newHost)
+        btn_change_leader.setOnClickListener {
 
-                text_if_leader.setText("あなたのチームのリーダーは${host}です")
+            val newHost = Member(host, isHost = true)
 
-                database.collection(dbCollection).document(keyword).collection("members")
-                    .whereEqualTo("host", true).get().addOnSuccessListener {
-                    val host : MutableList<QueryDocumentSnapshot> = mutableListOf()
-                    for(document in it){
+            database.collection(dbCollection).document(keyword).collection("members")
+                .document(nickname)
+                .set(newHost)
+
+            text_if_leader.setText("あなたのチームのリーダーは${host}です")
+
+            database.collection(dbCollection).document(keyword).collection("members")
+                .whereEqualTo("host", true).get().addOnSuccessListener {
+                    val host: MutableList<QueryDocumentSnapshot> = mutableListOf()
+                    for (document in it) {
                         host.add(document)
                     }
 
-                        btn_prepared.isEnabled = host.size == 2
-                }
-            }
-        }
-
-        companion object {
-
-            const val INTENT_KEY_KEYWORD = "keyword"
-            const val INTENT_KEY_NICKNAME = "nickname"
-
-            @JvmStatic
-            fun newInstance(keyword: String, nickname: String) =
-                GameSettingFragment().apply {
-                    arguments = Bundle().apply {
-                        putString(INTENT_KEY_KEYWORD, keyword)
-                        putString(INTENT_KEY_NICKNAME, nickname)
-                    }
+                    btn_prepared.isEnabled = host.size == 2
                 }
         }
     }
+
+    companion object {
+
+        const val INTENT_KEY_KEYWORD = "keyword"
+        const val INTENT_KEY_NICKNAME = "nickname"
+
+        @JvmStatic
+        fun newInstance(keyword: String, nickname: String) =
+            GameSettingFragment().apply {
+                arguments = Bundle().apply {
+                    putString(INTENT_KEY_KEYWORD, keyword)
+                    putString(INTENT_KEY_NICKNAME, nickname)
+                }
+            }
+    }
+}
