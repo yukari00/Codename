@@ -60,11 +60,8 @@ class GameActivity : AppCompatActivity(), WaitingMembersFragment.OnFragmentWaiti
         val docRef: DocumentReference = database.collection(dbCollection).document(keyword).collection("words").document(keyword)
         docRef.get().addOnSuccessListener {
 
-            for(i in 1 .. 25 ){
-                list.add(it.getString("word$i"))
+            list = it["words"] as MutableList<String?>
 
-            }
-            Collections.shuffle(list)
             showWords()
 
         }
