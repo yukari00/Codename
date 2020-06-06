@@ -3,6 +3,7 @@ package com.example.codename
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -39,14 +40,9 @@ class SetRoomInfoFragment : Fragment() {
         val nickname = input_edit_nickname.text.toString()
         val keyword = input_edit_keyword.text.toString()
 
-        if(createNickname(nickname, keyword)) {
 
-            when(status){
-                Status.CREATE_ROOM -> createRoom(nickname, keyword)
-                Status.JOIN_ROOM -> joinRoom(nickname, keyword)
-            }
-
-            startActivity(GameActivity.getLaunched(activity, keyword, nickname))
+        if (createNickname(nickname, keyword)) {
+            ifKeywordAlreadyExist(keyword, nickname, status)
         }
     }
 
@@ -54,24 +50,21 @@ class SetRoomInfoFragment : Fragment() {
 
         val memberList = Member(nickname)
 
-        if(!ifKeywordAlreadyExist()){
-            Toast.makeText(activity, "そのようなキーワードは存在しません。", Toast.LENGTH_SHORT).show()
-
-        } else {
-            database.collection(dbCollection).document(keyword).collection("members").document(nickname)
-                .set(memberList)
-        }
+        database.collection(dbCollection).document(keyword).collection("members").document(nickname)
+            .set(memberList)
 
 
     }
 
     private fun createRoom(nickname: String, keyword: String) {
 
-        val newRoom = hashMapOf("keyword" to keyword )
+        val newRoom = hashMapOf("keyword" to keyword)
         val memberList = Member(nickname)
-        val list = WordsData("1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11",
-        "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22",
-            "23", "24", "25")
+        val list = WordsData(
+            "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11",
+            "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22",
+            "23", "24", "25"
+        )
 
         database.collection(dbCollection).document(keyword).set(newRoom)
         database.collection(dbCollection).document(keyword).collection("members").document(nickname)
@@ -82,40 +75,46 @@ class SetRoomInfoFragment : Fragment() {
 
     private fun createNickname(nickname: String, keyword: String): Boolean {
 
-        if(nickname == "") {
+        if (nickname == "") {
             input_nickname.error = "ニックネームを入力してください。"
             return false
         }
 
-        if(keyword == ""){
+        if (keyword == "") {
             input_keyword.error = "キーワードを入力してください。"
             return false
         }
-
-        if(!ifKeywordAlreadyExist()){
-            input_keyword.error = "このキーワードは使用できません。"
-            return false
-        }
-
         return true
 
     }
 
-    private fun ifKeywordAlreadyExist(): Boolean {
+    private fun ifKeywordAlreadyExist(keyword: String, nickname: String, status: Status?) {
         //Todo キーワードが既に存在していないチェック
-        return true
-    }
+        database.collection(dbCollection).whereEqualTo("keyword", keyword).get()
+            .addOnSuccessListener {
+                if (it.isEmpty) {
+                    when (status) {
+                        Status.CREATE_ROOM -> {
+                            createRoom(nickname, keyword)
+                            startActivity(GameActivity.getLaunched(activity, keyword, nickname))
+                        }
+                        Status.JOIN_ROOM -> {
+                            input_keyword.error = "そのようなキーワードは存在しません"
+                        }
+                    }
+                } else {
+                    when (status) {
+                        Status.CREATE_ROOM -> {
+                            input_keyword.error = "このキーワードは使用できません。"
 
-    private fun checkIfTypedCorrectly(nickname: String): Boolean {
-
-        if(nickname == "") {
-            input_nickname.error = "ニックネームを入力してください"
-            return false
-        }
-
-
-
-        return true
+                        }
+                        Status.JOIN_ROOM -> {
+                            joinRoom(nickname, keyword)
+                            startActivity(GameActivity.getLaunched(activity, keyword, nickname))
+                        }
+                    }
+                }
+            }
     }
 
     override fun onCreateView(
