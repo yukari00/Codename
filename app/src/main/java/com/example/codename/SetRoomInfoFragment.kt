@@ -60,17 +60,10 @@ class SetRoomInfoFragment : Fragment() {
 
         val newRoom = hashMapOf("keyword" to keyword)
         val memberList = Member(nickname)
-        val list = WordsData(
-            "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11",
-            "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22",
-            "23", "24", "25"
-        )
 
         database.collection(dbCollection).document(keyword).set(newRoom)
         database.collection(dbCollection).document(keyword).collection("members").document(nickname)
             .set(memberList)
-        database.collection(dbCollection).document(keyword).collection("words").document(keyword)
-            .set(list)
     }
 
     private fun createNickname(nickname: String, keyword: String): Boolean {
