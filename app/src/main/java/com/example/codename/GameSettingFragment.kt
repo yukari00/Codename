@@ -11,6 +11,8 @@ import android.widget.ArrayAdapter
 import android.widget.Spinner
 import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.QueryDocumentSnapshot
+import com.google.firebase.firestore.QuerySnapshot
 import com.google.protobuf.Empty
 import kotlinx.android.synthetic.main.fragment_game_setting.*
 import java.util.*
@@ -77,29 +79,25 @@ class GameSettingFragment : Fragment() {
                 }
                 
                 splitMembersToTwoTeam(membersList, nickname)
-                individualsInfo()
 
             }
     }
 
-    private fun individualsInfo() {
+    private fun individualsInfo(teamRed: MutableList<String>, teamBlue: MutableList<String>, isYourTeam: Team) {
 
-        var yourTeam: String? = ""
-        var ifYourHost: Boolean? = false
+        var isYourHost: Boolean? = false
 
         val docRef: DocumentReference =
             database.collection(dbCollection).document(keyword).collection("members")
                 .document(nickname)
         docRef.get().addOnSuccessListener {
-            yourTeam = it.getString("team")
-            ifYourHost = it.getBoolean("host")
+            isYourHost = it.getBoolean("host")
             isPrepared = it.getBoolean("prepared")
 
             //ホストを取得
-            showHost(ifYourHost)
-            if (yourTeam == "RED") text_tell_which_team.setText("あなたは赤チームです") else text_tell_which_team.setText("あなたは青チームです")
+            showHost(isYourHost)
         }
-
+        if (isYourTeam == Team.RED) text_tell_which_team.setText("あなたは赤チームです") else text_tell_which_team.setText("あなたは青チームです")
 
         }
 
@@ -149,6 +147,7 @@ class GameSettingFragment : Fragment() {
         }
 
         setSpinner(teamRed, teamBlue, isYourTeam)
+        individualsInfo(teamRed, teamBlue, isYourTeam)
 
         text_red_mem_num.setText("赤チームの人数は${teamRed.size}人です")
         text_blue_mem_num.setText("青チームの人数は${teamBlue.size}人です")
@@ -196,6 +195,16 @@ class GameSettingFragment : Fragment() {
                     .set(memberList)
 
                 text_if_leader.setText("あなたのチームのリーダーは${host}です")
+
+                database.collection(dbCollection).document(keyword).collection("members")
+                    .whereEqualTo("host", true).get().addOnSuccessListener {
+                    val host : MutableList<QueryDocumentSnapshot> = mutableListOf()
+                    for(document in it){
+                        host.add(document)
+                    }
+
+                        btn_prepared.isEnabled = host.size == 2
+                }
             }
         }
 

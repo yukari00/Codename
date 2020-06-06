@@ -11,3 +11,5 @@ enum class Team {
     RED,
     BLUE
 }
+
+var isDataFinished = false
