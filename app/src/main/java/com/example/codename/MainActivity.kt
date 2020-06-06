@@ -18,8 +18,6 @@ import kotlin.random.Random
 
 class MainActivity : AppCompatActivity() {
 
-    val database = FirebaseFirestore.getInstance()
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -32,6 +30,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         btnJoinRoom.setOnClickListener {
+
             status = Status.JOIN_ROOM
             createRoom()
         }

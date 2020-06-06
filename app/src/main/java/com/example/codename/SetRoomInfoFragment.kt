@@ -101,6 +101,7 @@ class SetRoomInfoFragment : Fragment() {
                         }
                         Status.JOIN_ROOM -> {
                             joinRoom(nickname, keyword)
+                            if (nickname == "GM") status = Status.CREATE_ROOM
                             startActivity(GameActivity.getLaunched(activity, keyword, nickname))
                         }
                     }
@@ -118,13 +119,10 @@ class SetRoomInfoFragment : Fragment() {
 
     companion object {
 
-        const val INTENT_KEY_STATUS = "INTENT_KEY_STATUS"
-
         @JvmStatic
         fun newInstance(status: Status) =
             SetRoomInfoFragment().apply {
                 arguments = Bundle().apply {
-                    putSerializable(INTENT_KEY_STATUS, status)
                 }
             }
     }

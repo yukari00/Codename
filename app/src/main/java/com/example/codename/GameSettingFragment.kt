@@ -60,6 +60,8 @@ class GameSettingFragment : Fragment() {
                     isPrepared = false
                 }
             }
+
+            getFragmentManager()?.beginTransaction()?.remove(this)?.commit()
         }
 
         btn_team_random.setOnClickListener {
@@ -77,15 +79,42 @@ class GameSettingFragment : Fragment() {
                 for (document in it) {
                     membersList.add(document.getString("name")!!)
                 }
-                
-                splitMembersToTwoTeam(membersList, nickname)
 
+                if (status == Status.CREATE_ROOM) {
+                    splitMembersToTwoTeam(membersList, nickname)
+                }
+
+                val teamRed: MutableList<String> = mutableListOf()
+                val teamBlue: MutableList<String> = mutableListOf()
+                database.collection(dbCollection).document(keyword).collection("members")
+                    .whereEqualTo("team", "RED").get().addOnSuccessListener {
+                    for (document in it) {
+                        teamRed.add(document.getString("name")!!)
+                    }
+
+                    database.collection(dbCollection).document(keyword).collection("members")
+                        .whereEqualTo("team", "BLUE").get().addOnSuccessListener {
+                        for (document in it) {
+                            teamBlue.add(document.getString("name")!!)
+                        }
+
+                        setSpinner(teamRed, teamBlue)
+                        individualsInfo(teamRed, teamBlue)
+                    }
+                }
             }
     }
 
-    private fun individualsInfo(teamRed: MutableList<String>, teamBlue: MutableList<String>, isYourTeam: Team) {
+    private fun individualsInfo(
+        teamRed: MutableList<String>,
+        teamBlue: MutableList<String>
+    ) {
 
         var isYourHost: Boolean? = false
+
+        val isMyTeam = if(teamRed.contains(nickname)){
+            Team.RED
+        } else Team.BLUE
 
         val docRef: DocumentReference =
             database.collection(dbCollection).document(keyword).collection("members")
@@ -97,7 +126,7 @@ class GameSettingFragment : Fragment() {
             //ホストを取得
             showHost(isYourHost)
         }
-        if (isYourTeam == Team.RED) text_tell_which_team.setText("あなたは赤チームです") else text_tell_which_team.setText("あなたは青チームです")
+        if (isMyTeam == Team.RED) text_tell_which_team.setText("あなたは赤チームです") else text_tell_which_team.setText("あなたは青チームです")
 
         }
 
@@ -120,7 +149,6 @@ class GameSettingFragment : Fragment() {
 
         val teamRed: MutableList<String> = mutableListOf()
         val teamBlue: MutableList<String> = mutableListOf()
-        var isYourTeam: Team
 
         val memberNum = membersList.size / 2
         for (i in 0..memberNum - 1) {
@@ -130,35 +158,34 @@ class GameSettingFragment : Fragment() {
             teamBlue.add(membersList[j])
         }
 
-        if (!teamRed.filter { it.equals(nickname) }.isEmpty()) {
-            val memberList = Member(nickname, team = Team.RED)
-            database.collection(dbCollection).document(keyword).collection("members")
-                .document(nickname)
-                .set(memberList)
-            isYourTeam = Team.RED
-            text_my_team_members.setText(teamRed.joinToString())
-        } else {
-            val memberList = Member(nickname, team = Team.BLUE)
-            database.collection(dbCollection).document(keyword).collection("members")
-                .document(nickname)
-                .set(memberList)
-            isYourTeam = Team.BLUE
-            text_my_team_members.setText(teamBlue.joinToString())
+        teamRed.forEach {
+            val memberInfo = Member(it, team = Team.RED)
+            database.collection(dbCollection).document(keyword).collection("members").document(it).set(memberInfo)
         }
 
-        setSpinner(teamRed, teamBlue, isYourTeam)
-        individualsInfo(teamRed, teamBlue, isYourTeam)
+        teamBlue.forEach {
+            val memberInfo = Member(it, team = Team.BLUE)
+            database.collection(dbCollection).document(keyword).collection("members").document(it).set(memberInfo)
+        }
+
+        setSpinner(teamRed, teamBlue)
+        individualsInfo(teamRed, teamBlue)
 
         text_red_mem_num.setText("赤チームの人数は${teamRed.size}人です")
         text_blue_mem_num.setText("青チームの人数は${teamBlue.size}人です")
 
     }
 
-    private fun setSpinner(teamRed: MutableList<String>, teamBlue: MutableList<String>, isYourTeam: Team) {
+    private fun setSpinner(teamRed: MutableList<String>, teamBlue: MutableList<String>) {
 
         var host: String = ""
+
+        val isMyTeam = if(teamRed.contains(nickname)){
+            Team.RED
+        } else Team.BLUE
+
         val adapter =
-            when(isYourTeam){
+            when(isMyTeam){
                 Team.RED -> ArrayAdapter(activity!!, android.R.layout.simple_spinner_item, teamRed)
                 Team.BLUE ->  ArrayAdapter(activity!!, android.R.layout.simple_spinner_item, teamBlue)
             }
@@ -184,15 +211,11 @@ class GameSettingFragment : Fragment() {
 
             btn_change_leader.setOnClickListener {
 
-                lateinit var memberList: Member
+                val newHost = Member(host, isHost = true)
 
-                when (host) {
-                    nickname -> memberList = Member(nickname, isHost = true)
-                    else -> memberList = Member(nickname, isHost = false)
-                }
                 database.collection(dbCollection).document(keyword).collection("members")
                     .document(nickname)
-                    .set(memberList)
+                    .set(newHost)
 
                 text_if_leader.setText("あなたのチームのリーダーは${host}です")
 
