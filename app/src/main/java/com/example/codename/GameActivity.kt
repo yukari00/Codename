@@ -150,21 +150,24 @@ class GameActivity : AppCompatActivity(), WaitingMembersFragment.OnFragmentWaiti
        val red = mutableListOf<Int>()
        val blue = mutableListOf<Int>()
 
+        //RED
         for (i in 0 ..7) {
             red.add(list[i])
         }
-
         for (i in 0 until red.size-1){
             selectedWordsList.set(red[i], WordsData(selectedWordsList[red[i]].word, "RED"))
         }
 
+        //BLUE
         for (i in 8 .. 14) {
             blue.add(list[i])
         }
-
         for (i in 0 until blue.size - 1)
             selectedWordsList.set(blue[i], WordsData(selectedWordsList[blue[i]].word, "BLUE"))
 
+        //GRAY
+        val gray = list[24]
+        selectedWordsList.set(gray, WordsData(selectedWordsList[gray].word, "GRAY"))
 
         val saveList = hashMapOf("words" to selectedWordsList)
         database.collection(dbCollection).document(keyword).collection("words").document(keyword)

@@ -26,6 +26,8 @@ class CardAdapter(val wordList: List<WordsData>): RecyclerView.Adapter<CardAdapt
             holder.color.setBackgroundResource(R.color.RED)
         } else if (wordList[position].color == "BLUE"){
             holder.color.setBackgroundResource(R.color.BLUE)
+        } else if (wordList[position].color == "GRAY"){
+            holder.color.setBackgroundResource(R.color.GRAY)
         }
 
         Log.d("CHHHHHHHHHHHHHhh", "${wordList[position].word}")
