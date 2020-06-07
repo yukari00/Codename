@@ -17,6 +17,8 @@ import com.opencsv.CSVReaderBuilder
 import kotlinx.android.synthetic.main.activity_game.*
 import java.io.IOException
 import java.io.InputStreamReader
+import java.util.*
+import kotlin.collections.HashMap
 import kotlin.random.Random
 
 class GameActivity : AppCompatActivity(), WaitingMembersFragment.OnFragmentWaitingListener,
@@ -132,7 +134,37 @@ class GameActivity : AppCompatActivity(), WaitingMembersFragment.OnFragmentWaiti
 
     private fun writeCSVDataToFirebase(tempList: MutableList<Array<String>>?) {
 
-        val selectedWordsList: List<WordsData> = select25Words(tempList)
+        val selectedWordsList: MutableList<WordsData> = select25Words(tempList).toMutableList()
+
+        //赤が８
+        //青が７
+
+      val list = mutableListOf<Int>()
+
+      for(i in 0..24){
+           list.add(i)
+       }
+
+        Collections.shuffle(list)
+
+       val red = mutableListOf<Int>()
+       val blue = mutableListOf<Int>()
+
+        for (i in 0 ..7) {
+            red.add(list[i])
+        }
+
+        for (i in 0 until red.size-1){
+            selectedWordsList.set(red[i], WordsData(selectedWordsList[red[i]].word, "RED"))
+        }
+
+        for (i in 8 .. 14) {
+            blue.add(list[i])
+        }
+
+        for (i in 0 until blue.size - 1)
+            selectedWordsList.set(blue[i], WordsData(selectedWordsList[blue[i]].color, "BLUE"))
+
 
         val saveList = hashMapOf("words" to selectedWordsList)
         database.collection(dbCollection).document(keyword).collection("words").document(keyword)
