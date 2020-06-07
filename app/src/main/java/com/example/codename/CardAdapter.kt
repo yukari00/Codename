@@ -21,7 +21,7 @@ class CardAdapter(val wordList: List<WordsData>): RecyclerView.Adapter<CardAdapt
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
 
         holder.word.text = wordList[position].word
-        //holder.color.setBackgroundResource(wordList[position].color!!)
+        holder.color.text = wordList[position].color
         Log.d("CHHHHHHHHHHHHHhh", "${wordList[position].word}")
         Log.d("CHHHHHHHHHHHHHhh", "${wordList[position].color}")
 

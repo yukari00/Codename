@@ -56,31 +56,33 @@ class GameActivity : AppCompatActivity(), WaitingMembersFragment.OnFragmentWaiti
 
     private fun setCardWords(keyword: String) {
 
-        //list = mutableListOf()
-        //val docRef: DocumentReference =
-          //  database.collection(dbCollection).document(keyword).collection("words")
-            //    .document(keyword)
-        //docRef.get().addOnSuccessListener {
-          //  Log.d("Chhhhhhhhhhhhh1", "${it}")
+        list = mutableListOf()
+        val docRef: DocumentReference =
+            database.collection(dbCollection).document(keyword).collection("words")
+                .document(keyword)
+        docRef.get().addOnSuccessListener {
 
-           //val a = it["words"] as List<WordsData>
-            //Log.d("Chhhhhhhhhhhhh21", "${a[0]}")
+            val hashmap = it["words"] as List<HashMap<String, String>>
 
-            //list.add(WordsData(it.getString("word"), it.get("color") as Int?))
-            //showWords(list)
-      //  }
+            Log.d("Chhhhhhhhhhhhh21", "${hashmap[0]["color"]}")
+            Log.d("Chhhhhhhhhhhhh21", "${hashmap[0]["word"]}")
+
+            for(i in 0 .. 24){
+               list.add(WordsData(hashmap[i]["word"], hashmap[i]["color"]))
+           }
+            Log.d("Chhhhhhhhhhhhh21", "$list")
+            showWords(list)
+        }
     }
 
     private fun showWords(list: List<WordsData>) {
 
-       // Log.d("Chhhhhhhhhhhhh", "${list[0].word}")
-        //Log.d("Chhhhhhhhhhhhh", "${list[0].color}")
+        Log.d("Chhhhhhhhhhhhh22", "${list}")
 
+        val adapter = CardAdapter(list)
 
-        //val adapter = CardAdapter(list)
-
-       //recycler_view.layoutManager = GridLayoutManager(this, 5)
-       //recycler_view.adapter = adapter
+       recycler_view.layoutManager = GridLayoutManager(this, 5)
+       recycler_view.adapter = adapter
 
     }
 
@@ -107,7 +109,7 @@ class GameActivity : AppCompatActivity(), WaitingMembersFragment.OnFragmentWaiti
 
     //GameSettingFragment.OnFragmentGameSettingListener
     override fun GameStart() {
-        //setCardWords(keyword)
+        setCardWords(keyword)
     }
 
     private fun importWordsFromCSV() {
