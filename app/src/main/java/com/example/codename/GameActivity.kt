@@ -95,6 +95,7 @@ class GameActivity : AppCompatActivity(), WaitingMembersFragment.OnFragmentWaiti
 
         var numRedCard = red.size
         var numBlueCard = blue.size
+        val clicedOnce = mutableListOf<Int>()
 
         val adapter = CardAdapter(list, object : CardAdapter.OnCardAdapterListener{
             override fun OnClickCard(word: String) {
@@ -106,23 +107,27 @@ class GameActivity : AppCompatActivity(), WaitingMembersFragment.OnFragmentWaiti
                         val index = hashmap.indexOfFirst { it.containsValue(word) }
 
                         //赤のカードのindexと青のカードのindex
-                        
-                        for (i in 0 until red.size){
-                            if(index == red[i]){
-                                numRedCard -= 1
-                                if(numRedCard == 0) Toast.makeText(this@GameActivity, "赤チームの勝利です", Toast.LENGTH_LONG).show()
+                        if(!clicedOnce.contains(index)) {
+                           
+                            for (i in 0 until red.size){
+                                if(index == red[i]){
+                                    numRedCard -= 1
+                                    if(numRedCard == 0) Toast.makeText(this@GameActivity, "赤チームの勝利です", Toast.LENGTH_LONG).show()
+                                }
                             }
-                        }
 
-                        for(i in 0 until blue.size){
-                            if(index == blue[i]){
-                                numBlueCard--
-                                if(numBlueCard == 0)Toast.makeText(this@GameActivity, "青チームの勝利です", Toast.LENGTH_LONG).show()
+                            for(i in 0 until blue.size){
+                                if(index == blue[i]){
+                                    numBlueCard--
+                                    if(numBlueCard == 0)Toast.makeText(this@GameActivity, "青チームの勝利です", Toast.LENGTH_LONG).show()
+                                }
                             }
-                        }
-                        wordDataSavedToFirestore.set(index, grayCard)
-                        val saveList = hashMapOf("words" to wordDataSavedToFirestore)
-                        database.collection(dbCollection).document(keyword).collection("words").document(keyword).set(saveList)
+                            wordDataSavedToFirestore.set(index, grayCard)
+                            val saveList = hashMapOf("words" to wordDataSavedToFirestore)
+                            database.collection(dbCollection).document(keyword).collection("words").document(keyword).set(saveList)
+                      }
+
+                        clicedOnce.add(index)
 
             }
         }})
