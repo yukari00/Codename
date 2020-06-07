@@ -15,6 +15,7 @@ import com.opencsv.CSVParserBuilder
 import com.opencsv.CSVReader
 import com.opencsv.CSVReaderBuilder
 import kotlinx.android.synthetic.main.activity_game.*
+import org.apache.commons.lang3.mutable.Mutable
 import java.io.IOException
 import java.io.InputStreamReader
 import java.util.*
@@ -29,6 +30,8 @@ class GameActivity : AppCompatActivity(), WaitingMembersFragment.OnFragmentWaiti
 
     var keyword: String = ""
     var nickname: String = ""
+
+    var wordDataSavedToFirestore: MutableList<WordsData> = mutableListOf()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -78,9 +81,17 @@ class GameActivity : AppCompatActivity(), WaitingMembersFragment.OnFragmentWaiti
 
         val adapter = CardAdapter(list, object : CardAdapter.OnCardAdapterListener{
             override fun OnClickCard(word: String) {
-                
+                val grayCard = WordsData(word, "OVER")
+
+                database.collection(dbCollection).document(keyword).collection("words").document(keyword)
+                    .get().addOnSuccessListener {
+                        val hashmap = it["words"] as List<HashMap<String, String>>
+                        val index = hashmap.indexOfFirst { it.containsValue(word) }
+                        wordDataSavedToFirestore.set(index, grayCard)
+                        val saveList = hashMapOf("words" to wordDataSavedToFirestore)
+                        database.collection(dbCollection).document(keyword).collection("words").document(keyword).set(saveList)
             }
-        })
+        }})
 
        recycler_view.layoutManager = GridLayoutManager(this, 5)
        recycler_view.adapter = adapter
@@ -169,7 +180,8 @@ class GameActivity : AppCompatActivity(), WaitingMembersFragment.OnFragmentWaiti
         val gray = list[24]
         selectedWordsList.set(gray, WordsData(selectedWordsList[gray].word, "GRAY"))
 
-        val saveList = hashMapOf("words" to selectedWordsList)
+        wordDataSavedToFirestore = selectedWordsList
+        val saveList = hashMapOf("words" to wordDataSavedToFirestore)
         database.collection(dbCollection).document(keyword).collection("words").document(keyword)
             .set(saveList)
 
