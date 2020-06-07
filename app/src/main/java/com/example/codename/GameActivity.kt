@@ -4,9 +4,11 @@ import android.content.Intent
 import android.content.res.AssetManager
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.ArrayMap
 import android.util.Log
 import android.widget.Toast
 import androidx.fragment.app.FragmentActivity
+import androidx.recyclerview.widget.GridLayoutManager
 import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.FirebaseFirestore
 import com.opencsv.CSVParserBuilder
@@ -21,7 +23,7 @@ class GameActivity : AppCompatActivity(), WaitingMembersFragment.OnFragmentWaiti
     GameSettingFragment.OnFragmentGameSettingListener {
 
     val database = FirebaseFirestore.getInstance()
-    lateinit var list: MutableList<String?>
+    lateinit var list: MutableList<WordsData>
 
     var keyword: String = ""
     var nickname: String = ""
@@ -54,46 +56,31 @@ class GameActivity : AppCompatActivity(), WaitingMembersFragment.OnFragmentWaiti
 
     private fun setCardWords(keyword: String) {
 
-        list = mutableListOf()
-        val docRef: DocumentReference =
-            database.collection(dbCollection).document(keyword).collection("words")
-                .document(keyword)
-        docRef.get().addOnSuccessListener {
+        //list = mutableListOf()
+        //val docRef: DocumentReference =
+          //  database.collection(dbCollection).document(keyword).collection("words")
+            //    .document(keyword)
+        //docRef.get().addOnSuccessListener {
+          //  Log.d("Chhhhhhhhhhhhh1", "${it}")
 
-            list = it["words"] as MutableList<String?>
-            showWords()
+           //val a = it["words"] as List<WordsData>
+            //Log.d("Chhhhhhhhhhhhh21", "${a[0]}")
 
-        }
-
+            //list.add(WordsData(it.getString("word"), it.get("color") as Int?))
+            //showWords(list)
+      //  }
     }
 
-    private fun showWords() {
+    private fun showWords(list: List<WordsData>) {
 
-        button.setText(list[0])
-        button2.setText(list[1])
-        button3.setText(list[2])
-        button4.setText(list[3])
-        button5.setText(list[4])
-        button6.setText(list[5])
-        button7.setText(list[6])
-        button8.setText(list[7])
-        button9.setText(list[8])
-        button10.setText(list[9])
-        button11.setText(list[10])
-        button12.setText(list[11])
-        button13.setText(list[12])
-        button14.setText(list[13])
-        button15.setText(list[14])
-        button16.setText(list[15])
-        button17.setText(list[16])
-        button18.setText(list[17])
-        button19.setText(list[18])
-        button20.setText(list[19])
-        button21.setText(list[20])
-        button22.setText(list[21])
-        button23.setText(list[22])
-        button24.setText(list[23])
-        button25.setText(list[24])
+       // Log.d("Chhhhhhhhhhhhh", "${list[0].word}")
+        //Log.d("Chhhhhhhhhhhhh", "${list[0].color}")
+
+
+        //val adapter = CardAdapter(list)
+
+       //recycler_view.layoutManager = GridLayoutManager(this, 5)
+       //recycler_view.adapter = adapter
 
     }
 
@@ -120,7 +107,7 @@ class GameActivity : AppCompatActivity(), WaitingMembersFragment.OnFragmentWaiti
 
     //GameSettingFragment.OnFragmentGameSettingListener
     override fun GameStart() {
-        setCardWords(keyword)
+        //setCardWords(keyword)
     }
 
     private fun importWordsFromCSV() {
@@ -143,7 +130,7 @@ class GameActivity : AppCompatActivity(), WaitingMembersFragment.OnFragmentWaiti
 
     private fun writeCSVDataToFirebase(tempList: MutableList<Array<String>>?) {
 
-        val selectedWordsList: List<String> = select25Words(tempList)
+        val selectedWordsList: List<WordsData> = select25Words(tempList)
 
         val saveList = hashMapOf("words" to selectedWordsList)
         database.collection(dbCollection).document(keyword).collection("words").document(keyword)
@@ -151,24 +138,24 @@ class GameActivity : AppCompatActivity(), WaitingMembersFragment.OnFragmentWaiti
 
     }
 
-    private fun select25Words(tempList: MutableList<Array<String>>?): List<String> {
+    private fun select25Words(tempList: MutableList<Array<String>>?): List<WordsData> {
 
-        val list: MutableList<String> = mutableListOf()
+        val list: MutableList<WordsData> = mutableListOf()
 
         for (i in 0 until tempList!!.size - 1) {
 
             val a = tempList[i]
 
             for (element in a) {
-                list.add(element)
+                list.add(WordsData(element))
             }
         }
         val notNullList = list.distinct()
 
         Log.d("CHHhhhhhhhhhhh", "$notNullList")
 
-        val result: MutableList<String> = mutableListOf()
-        val remaining: MutableList<String> = notNullList.toMutableList()
+        val result: MutableList<WordsData> = mutableListOf()
+        val remaining: MutableList<WordsData> = notNullList.toMutableList()
 
         for (i in 0..24) {
             val remainingCount = remaining.size

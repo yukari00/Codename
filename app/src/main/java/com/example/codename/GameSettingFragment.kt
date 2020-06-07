@@ -29,6 +29,7 @@ class GameSettingFragment : Fragment() {
     val database = FirebaseFirestore.getInstance()
 
     var listener: OnFragmentGameSettingListener? = null
+    lateinit var adapter: ArrayAdapter<String>
 
     interface OnFragmentGameSettingListener {
 
@@ -91,6 +92,8 @@ class GameSettingFragment : Fragment() {
     override fun onDetach() {
         super.onDetach()
         listener = null
+        adapter.clear()
+
     }
 
 
@@ -160,9 +163,11 @@ class GameSettingFragment : Fragment() {
         var host: String? = ""
         database.collection(dbCollection).document(keyword).collection("members")
             .whereEqualTo("host", true).get().addOnSuccessListener {
-                if (it.isEmpty) {
+                Log.d("CHHHHHHHHHHHCHECKTHIS", "${it}")
+               if(it.isEmpty){
                     text_if_leader.setText("話し合いでチームリーダを決めてください")
-                } else {
+                }
+                else {
                     host = it.documents.first().getString("name")
                     if (ifYourHost!!) text_if_leader.setText("あなたはリーダーです") else text_if_leader.setText(
                         "あなたのチームのリーダーは${host}です"
@@ -214,7 +219,7 @@ class GameSettingFragment : Fragment() {
             Team.RED
         } else Team.BLUE
 
-        val adapter =
+        adapter=
             when (isMyTeam) {
                 Team.RED -> ArrayAdapter(activity!!, android.R.layout.simple_spinner_item, teamRed)
                 Team.BLUE -> ArrayAdapter(
