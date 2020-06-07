@@ -163,7 +163,7 @@ class GameActivity : AppCompatActivity(), WaitingMembersFragment.OnFragmentWaiti
         }
 
         for (i in 0 until blue.size - 1)
-            selectedWordsList.set(blue[i], WordsData(selectedWordsList[blue[i]].color, "BLUE"))
+            selectedWordsList.set(blue[i], WordsData(selectedWordsList[blue[i]].word, "BLUE"))
 
 
         val saveList = hashMapOf("words" to selectedWordsList)
