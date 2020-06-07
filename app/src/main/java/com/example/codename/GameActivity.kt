@@ -22,7 +22,7 @@ import kotlin.collections.HashMap
 import kotlin.random.Random
 
 class GameActivity : AppCompatActivity(), WaitingMembersFragment.OnFragmentWaitingListener,
-    GameSettingFragment.OnFragmentGameSettingListener {
+    GameSettingFragment.OnFragmentGameSettingListener, CardAdapter.OnCardAdapterListener {
 
     val database = FirebaseFirestore.getInstance()
     lateinit var list: MutableList<WordsData>
@@ -66,22 +66,21 @@ class GameActivity : AppCompatActivity(), WaitingMembersFragment.OnFragmentWaiti
 
             val hashmap = it["words"] as List<HashMap<String, String>>
 
-            Log.d("Chhhhhhhhhhhhh21", "${hashmap[0]["color"]}")
-            Log.d("Chhhhhhhhhhhhh21", "${hashmap[0]["word"]}")
-
             for(i in 0 .. 24){
                list.add(WordsData(hashmap[i]["word"], hashmap[i]["color"]))
            }
-            Log.d("Chhhhhhhhhhhhh21", "$list")
+
             showWords(list)
         }
     }
 
     private fun showWords(list: List<WordsData>) {
 
-        Log.d("Chhhhhhhhhhhhh22", "${list}")
+        val adapter = CardAdapter(list, object : CardAdapter.OnCardAdapterListener{
+            override fun OnClickCard() {
 
-        val adapter = CardAdapter(list)
+            }
+        })
 
        recycler_view.layoutManager = GridLayoutManager(this, 5)
        recycler_view.adapter = adapter
@@ -112,6 +111,11 @@ class GameActivity : AppCompatActivity(), WaitingMembersFragment.OnFragmentWaiti
     //GameSettingFragment.OnFragmentGameSettingListener
     override fun GameStart() {
         setCardWords(keyword)
+    }
+
+    //CardAdapter.OnCardAdapterListener
+    override fun OnClickCard() {
+        TODO("Not yet implemented")
     }
 
     private fun importWordsFromCSV() {
@@ -221,6 +225,5 @@ class GameActivity : AppCompatActivity(), WaitingMembersFragment.OnFragmentWaiti
 
         return CSVReaderBuilder(InputStreamReader(inputStream)).withCSVParser(parser).build()
     }
-
 
 }

@@ -2,13 +2,18 @@ package com.example.codename
 
 import android.util.Log
 import android.view.LayoutInflater
+import android.view.OrientationEventListener
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.view.menu.ActionMenuItemView
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.card_words.view.*
 
-class CardAdapter(val wordList: List<WordsData>): RecyclerView.Adapter<CardAdapter.ViewHolder>() {
+class CardAdapter(val wordList: List<WordsData>, val listener: OnCardAdapterListener): RecyclerView.Adapter<CardAdapter.ViewHolder>() {
+
+    interface OnCardAdapterListener{
+        fun OnClickCard()
+    }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         return ViewHolder(LayoutInflater.from(parent.context)
@@ -30,8 +35,10 @@ class CardAdapter(val wordList: List<WordsData>): RecyclerView.Adapter<CardAdapt
             holder.color.setBackgroundResource(R.color.GRAY)
         }
 
-        Log.d("CHHHHHHHHHHHHHhh", "${wordList[position].word}")
-        Log.d("CHHHHHHHHHHHHHhh", "${wordList[position].color}")
+        holder.itemView.setOnClickListener {
+            holder.itemView.card_view.setBackgroundResource(R.color.LIGHT_GRAY)
+            holder.color.setBackgroundResource(R.color.LIGHT_GRAY)
+        }
 
 
     }
