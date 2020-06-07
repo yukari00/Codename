@@ -22,7 +22,7 @@ import kotlin.collections.HashMap
 import kotlin.random.Random
 
 class GameActivity : AppCompatActivity(), WaitingMembersFragment.OnFragmentWaitingListener,
-    GameSettingFragment.OnFragmentGameSettingListener, CardAdapter.OnCardAdapterListener {
+    GameSettingFragment.OnFragmentGameSettingListener{
 
     val database = FirebaseFirestore.getInstance()
     lateinit var list: MutableList<WordsData>
@@ -77,8 +77,8 @@ class GameActivity : AppCompatActivity(), WaitingMembersFragment.OnFragmentWaiti
     private fun showWords(list: List<WordsData>) {
 
         val adapter = CardAdapter(list, object : CardAdapter.OnCardAdapterListener{
-            override fun OnClickCard() {
-
+            override fun OnClickCard(word: String) {
+                
             }
         })
 
@@ -113,10 +113,6 @@ class GameActivity : AppCompatActivity(), WaitingMembersFragment.OnFragmentWaiti
         setCardWords(keyword)
     }
 
-    //CardAdapter.OnCardAdapterListener
-    override fun OnClickCard() {
-        TODO("Not yet implemented")
-    }
 
     private fun importWordsFromCSV() {
 

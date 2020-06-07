@@ -12,7 +12,7 @@ import kotlinx.android.synthetic.main.card_words.view.*
 class CardAdapter(val wordList: List<WordsData>, val listener: OnCardAdapterListener): RecyclerView.Adapter<CardAdapter.ViewHolder>() {
 
     interface OnCardAdapterListener{
-        fun OnClickCard()
+        fun OnClickCard(word: String)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -38,6 +38,9 @@ class CardAdapter(val wordList: List<WordsData>, val listener: OnCardAdapterList
         holder.itemView.setOnClickListener {
             holder.itemView.card_view.setBackgroundResource(R.color.LIGHT_GRAY)
             holder.color.setBackgroundResource(R.color.LIGHT_GRAY)
+
+            val word = holder.word.text as String
+            listener.OnClickCard(word)
         }
 
 
