@@ -33,6 +33,9 @@ class GameActivity : AppCompatActivity(), WaitingMembersFragment.OnFragmentWaiti
 
     var wordDataSavedToFirestore: MutableList<WordsData> = mutableListOf()
 
+    lateinit var red : MutableList<Int>
+    lateinit var blue: MutableList<Int>
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_game)
@@ -59,6 +62,17 @@ class GameActivity : AppCompatActivity(), WaitingMembersFragment.OnFragmentWaiti
 
     }
 
+    private fun checkScore(){
+        database.collection(dbCollection).document(keyword).collection("words")
+            .document(keyword).get().addOnSuccessListener {
+
+                var numRedCard = 0
+                var numBlueCard = 0
+
+
+            }
+    }
+
     private fun setCardWords(keyword: String) {
 
         list = mutableListOf()
@@ -79,6 +93,9 @@ class GameActivity : AppCompatActivity(), WaitingMembersFragment.OnFragmentWaiti
 
     private fun showWords(list: List<WordsData>) {
 
+        var numRedCard = red.size
+        var numBlueCard = blue.size
+
         val adapter = CardAdapter(list, object : CardAdapter.OnCardAdapterListener{
             override fun OnClickCard(word: String) {
                 val grayCard = WordsData(word, "OVER")
@@ -87,9 +104,26 @@ class GameActivity : AppCompatActivity(), WaitingMembersFragment.OnFragmentWaiti
                     .get().addOnSuccessListener {
                         val hashmap = it["words"] as List<HashMap<String, String>>
                         val index = hashmap.indexOfFirst { it.containsValue(word) }
+
+                        //赤のカードのindexと青のカードのindex
+                        
+                        for (i in 0 until red.size){
+                            if(index == red[i]){
+                                numRedCard -= 1
+                                if(numRedCard == 0) Toast.makeText(this@GameActivity, "赤チームの勝利です", Toast.LENGTH_LONG).show()
+                            }
+                        }
+
+                        for(i in 0 until blue.size){
+                            if(index == blue[i]){
+                                numBlueCard--
+                                if(numBlueCard == 0)Toast.makeText(this@GameActivity, "青チームの勝利です", Toast.LENGTH_LONG).show()
+                            }
+                        }
                         wordDataSavedToFirestore.set(index, grayCard)
                         val saveList = hashMapOf("words" to wordDataSavedToFirestore)
                         database.collection(dbCollection).document(keyword).collection("words").document(keyword).set(saveList)
+
             }
         }})
 
@@ -158,14 +192,14 @@ class GameActivity : AppCompatActivity(), WaitingMembersFragment.OnFragmentWaiti
 
         Collections.shuffle(list)
 
-       val red = mutableListOf<Int>()
-       val blue = mutableListOf<Int>()
+       red = mutableListOf<Int>()
+       blue = mutableListOf<Int>()
 
         //RED
         for (i in 0 ..7) {
             red.add(list[i])
         }
-        for (i in 0 until red.size-1){
+        for (i in 0 until red.size){
             selectedWordsList.set(red[i], WordsData(selectedWordsList[red[i]].word, "RED"))
         }
 
@@ -173,9 +207,9 @@ class GameActivity : AppCompatActivity(), WaitingMembersFragment.OnFragmentWaiti
         for (i in 8 .. 14) {
             blue.add(list[i])
         }
-        for (i in 0 until blue.size - 1)
+        for (i in 0 until blue.size) {
             selectedWordsList.set(blue[i], WordsData(selectedWordsList[blue[i]].word, "BLUE"))
-
+        }
         //GRAY
         val gray = list[24]
         selectedWordsList.set(gray, WordsData(selectedWordsList[gray].word, "GRAY"))
