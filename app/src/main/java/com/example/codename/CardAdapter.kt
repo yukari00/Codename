@@ -27,17 +27,38 @@ class CardAdapter(val wordList: List<WordsData>, val listener: OnCardAdapterList
 
         holder.word.text = wordList[position].word
 
-        if(wordList[position].color == "RED"){
-            holder.color.setBackgroundResource(R.color.RED)
-        } else if (wordList[position].color == "BLUE"){
-            holder.color.setBackgroundResource(R.color.BLUE)
-        } else if (wordList[position].color == "GRAY"){
-            holder.color.setBackgroundResource(R.color.GRAY)
+        if(isHost){
+            if(wordList[position].color == "RED"){
+                holder.color.setBackgroundResource(R.color.RED)
+            } else if (wordList[position].color == "BLUE"){
+                holder.color.setBackgroundResource(R.color.BLUE)
+            } else if (wordList[position].color == "GRAY"){
+                holder.color.setBackgroundResource(R.color.GRAY)
+            }
         }
 
+
         holder.itemView.setOnClickListener {
-            holder.itemView.card_view.setBackgroundResource(R.color.LIGHT_GRAY)
-            holder.color.setBackgroundResource(R.color.LIGHT_GRAY)
+
+            when(wordList[position].color){
+                "RED" -> {
+                    holder.itemView.card_view.setBackgroundResource(R.color.RED)
+                    holder.color.setBackgroundResource(R.color.RED)
+                }
+                "BLUE" -> {
+                    holder.itemView.card_view.setBackgroundResource(R.color.BLUE)
+                    holder.color.setBackgroundResource(R.color.BLUE)
+                }
+                "GRAY" -> {
+                    holder.itemView.card_view.setBackgroundResource(R.color.GRAY)
+                    holder.color.setBackgroundResource(R.color.GRAY)
+                }
+                else -> {
+                    holder.itemView.card_view.setBackgroundResource(R.color.LIGHT_GRAY)
+                    holder.color.setBackgroundResource(R.color.LIGHT_GRAY)
+                }
+            }
+
 
             val word = holder.word.text as String
             listener.OnClickCard(word)

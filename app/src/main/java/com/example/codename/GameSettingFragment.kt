@@ -112,32 +112,36 @@ class GameSettingFragment : Fragment() {
                 }
 
                 if (status == Status.CREATE_ROOM) {
+
                     splitMembersToTwoTeam(membersList, nickname)
+
+                } else {
+                    val teamRed: MutableList<String> = mutableListOf()
+                    val teamBlue: MutableList<String> = mutableListOf()
+                    database.collection(dbCollection).document(keyword).collection("members")
+                        .whereEqualTo("team", "RED").get().addOnSuccessListener {
+                            for (document in it) {
+                                teamRed.add(document.getString("name")!!)
+                            }
+
+                            database.collection(dbCollection).document(keyword).collection("members")
+                                .whereEqualTo("team", "BLUE").get().addOnSuccessListener {
+                                    for (document in it) {
+                                        teamBlue.add(document.getString("name")!!)
+                                    }
+
+                                    Log.d("チーム赤", "$teamRed")
+                                    Log.d("チーム青", "$teamBlue")
+
+                                    text_red_mem_num.setText("赤チームの人数は${teamRed.size}人です")
+                                    text_blue_mem_num.setText("青チームの人数は${teamBlue.size}人です")
+
+                                    setSpinner(teamRed, teamBlue)
+                                    individualsInfo(teamRed, teamBlue)
                 }
 
                 //Creatorがチームを作っている間にロード中ができたらいい（チーム編成が終わったらメンバーの画面が表示される）
-                val teamRed: MutableList<String> = mutableListOf()
-                val teamBlue: MutableList<String> = mutableListOf()
-                database.collection(dbCollection).document(keyword).collection("members")
-                    .whereEqualTo("team", "RED").get().addOnSuccessListener {
-                        for (document in it) {
-                            teamRed.add(document.getString("name")!!)
-                        }
 
-                        database.collection(dbCollection).document(keyword).collection("members")
-                            .whereEqualTo("team", "BLUE").get().addOnSuccessListener {
-                                for (document in it) {
-                                    teamBlue.add(document.getString("name")!!)
-                                }
-
-                                Log.d("チーム赤", "$teamRed")
-                                Log.d("チーム青", "$teamBlue")
-
-                                text_red_mem_num.setText("赤チームの人数は${teamRed.size}人です")
-                                text_blue_mem_num.setText("青チームの人数は${teamBlue.size}人です")
-
-                                setSpinner(teamRed, teamBlue)
-                                individualsInfo(teamRed, teamBlue)
                             }
                     }
             }
@@ -161,21 +165,23 @@ class GameSettingFragment : Fragment() {
 
     private fun showHost(myTeam: String) {
         var host: String? = ""
+
         database.collection(dbCollection).document(keyword).collection("members")
             .whereEqualTo("host", true).get().addOnSuccessListener {
-                Log.d("CHHHHHHHHHHHCHECKTHIS", "${it}")
                 if (it.isEmpty) {
                     text_if_leader.setText("話し合いでチームリーダを決めてください")
                 }
                 else {
                    for(document in it){
-                       if(document.getString("team") === myTeam){
+
+                       if(document.getString("team") == myTeam){
+
                            host = document.getString("name")
                        }
                    }
                     when(host){
                         nickname -> text_if_leader.setText("あなたはリーダーです")
-                        "" -> text_if_leader.setText("話し合いでチームリーダを決めてください")
+                        "" -> text_if_leader.setText("話し合いでチームリーダを決めてくださいne")
                         else -> text_if_leader.setText("あなたのチームのリーダーは${host}です")
                     }
                 }
@@ -190,10 +196,10 @@ class GameSettingFragment : Fragment() {
         val teamBlue: MutableList<String> = mutableListOf()
 
         val memberNum = membersList.size / 2
-        for (i in 0..memberNum - 1) {
+        for (i in 0 until memberNum) {
             teamRed.add(membersList[i])
         }
-        for (j in memberNum..membersList.size - 1) {
+        for (j in memberNum until membersList.size) {
             teamBlue.add(membersList[j])
         }
 
@@ -209,6 +215,9 @@ class GameSettingFragment : Fragment() {
                 .set(memberInfo)
         }
 
+        text_red_mem_num.setText("赤チームの人数は${teamRed.size}人です")
+        text_blue_mem_num.setText("青チームの人数は${teamBlue.size}人です")
+
         setSpinner(teamRed, teamBlue)
         individualsInfo(teamRed, teamBlue)
 
@@ -217,7 +226,7 @@ class GameSettingFragment : Fragment() {
     private fun setSpinner(teamRed: MutableList<String>, teamBlue: MutableList<String>) {
 
         var host: String = ""
-
+        var listNotSelected = mutableListOf<String>()
         val isMyTeam = if (teamRed.contains(nickname)) {
             Team.RED
         } else Team.BLUE
@@ -248,18 +257,32 @@ class GameSettingFragment : Fragment() {
                 val selectedMember = spinnerParent.selectedItem as String
                 host = selectedMember
 
+                listNotSelected = wasNotSelectedPeopleList(selectedMember, isMyTeam ,teamRed, teamBlue)
+
+                }
             }
-        }
 
         btn_change_leader.setOnClickListener {
 
+            if(host == nickname) isHost = true
+            Log.d("MEMBER", "$isHost")
+            Log.d("nickname", "$nickname")
+            Log.d("HOST", "$host")
+
             val newHost = Member(host, isMyTeam, isHost = true)
+            Log.d("LISTNOTSELECTED", "$listNotSelected")
+            listNotSelected.forEach {
+                database.collection(dbCollection).document(keyword).collection("members")
+                    .document(it)
+                    .set(Member(it, isMyTeam, isHost= false))
+            }
 
             database.collection(dbCollection).document(keyword).collection("members")
                 .document(host)
                 .set(newHost)
 
-            text_if_leader.setText("あなたのチームのリーダーは${host}です")
+            val myTeamString = if (isMyTeam == Team.RED) "RED" else "BLUE"
+            showHost(myTeamString)
 
             database.collection(dbCollection).document(keyword).collection("members")
                 .whereEqualTo("host", true).get().addOnSuccessListener {
@@ -271,6 +294,16 @@ class GameSettingFragment : Fragment() {
                     btn_prepared.isEnabled = host.size == 2
                 }
         }
+    }
+
+    private fun wasNotSelectedPeopleList(selectedMember: String, isMyTeam: Team, teamRed: MutableList<String>, teamBlue: MutableList<String>): MutableList<String> {
+
+        when(isMyTeam){
+
+            Team.RED -> return teamRed.filterNot { it == selectedMember }.toMutableList()
+            Team.BLUE -> return teamBlue.filterNot { it == selectedMember }.toMutableList()
+        }
+
     }
 
     companion object {
