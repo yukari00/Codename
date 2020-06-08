@@ -148,41 +148,36 @@ class GameSettingFragment : Fragment() {
         teamBlue: MutableList<String>
     ) {
 
-        var isYourHost: Boolean? = false
+        val myTeam = if (teamRed.contains(nickname)) "RED" else "BLUE"
 
-        val isMyTeam = if (teamRed.contains(nickname)) {
-            Team.RED
-        } else Team.BLUE
+        //ホストを取得
+        showHost(myTeam)
 
-        val docRef: DocumentReference =
-            database.collection(dbCollection).document(keyword).collection("members")
-                .document(nickname)
-        docRef.get().addOnSuccessListener {
-            isYourHost = it.getBoolean("host")
-            isPrepared = it.getBoolean("prepared")
-
-            //ホストを取得
-            showHost(isYourHost)
-        }
-        if (isMyTeam == Team.RED) text_tell_which_team.setText("あなたは赤チームです") else text_tell_which_team.setText(
+        if (myTeam == "RED") text_tell_which_team.setText("あなたは赤チームです") else text_tell_which_team.setText(
             "あなたは青チームです"
         )
 
     }
 
-    private fun showHost(ifYourHost: Boolean?) {
+    private fun showHost(myTeam: String) {
         var host: String? = ""
         database.collection(dbCollection).document(keyword).collection("members")
             .whereEqualTo("host", true).get().addOnSuccessListener {
                 Log.d("CHHHHHHHHHHHCHECKTHIS", "${it}")
-               if(it.isEmpty){
+                if (it.isEmpty) {
                     text_if_leader.setText("話し合いでチームリーダを決めてください")
                 }
                 else {
-                    host = it.documents.first().getString("name")
-                    if (ifYourHost!!) text_if_leader.setText("あなたはリーダーです") else text_if_leader.setText(
-                        "あなたのチームのリーダーは${host}です"
-                    )
+                   for(document in it){
+                       if(document.getString("team") === myTeam){
+                           host = document.getString("name")
+                       }
+                   }
+                    when(host){
+                        nickname -> text_if_leader.setText("あなたはリーダーです")
+                        "" -> text_if_leader.setText("話し合いでチームリーダを決めてください")
+                        else -> text_if_leader.setText("あなたのチームのリーダーは${host}です")
+                    }
                 }
             }
     }
@@ -261,7 +256,7 @@ class GameSettingFragment : Fragment() {
             val newHost = Member(host, isMyTeam, isHost = true)
 
             database.collection(dbCollection).document(keyword).collection("members")
-                .document(nickname)
+                .document(host)
                 .set(newHost)
 
             text_if_leader.setText("あなたのチームのリーダーは${host}です")
