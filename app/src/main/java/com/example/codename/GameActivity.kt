@@ -36,6 +36,8 @@ class GameActivity : AppCompatActivity(), WaitingMembersFragment.OnFragmentWaiti
     lateinit var red : MutableList<Int>
     lateinit var blue: MutableList<Int>
 
+    var gray: Int = 0
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_game)
@@ -108,18 +110,24 @@ class GameActivity : AppCompatActivity(), WaitingMembersFragment.OnFragmentWaiti
 
                         //赤のカードのindexと青のカードのindex
                         if(!clicedOnce.contains(index)) {
+
+                            if(index == gray)Toast.makeText(this@GameActivity, "ゲームオーバーです", Toast.LENGTH_LONG).show()
                            
                             for (i in 0 until red.size){
                                 if(index == red[i]){
                                     numRedCard -= 1
-                                    if(numRedCard == 0) Toast.makeText(this@GameActivity, "赤チームの勝利です", Toast.LENGTH_LONG).show()
+                                    if(numRedCard == 0) {
+                                        Toast.makeText(this@GameActivity, "赤チームの勝利です", Toast.LENGTH_LONG).show()
+                                    }
                                 }
                             }
 
                             for(i in 0 until blue.size){
                                 if(index == blue[i]){
                                     numBlueCard--
-                                    if(numBlueCard == 0)Toast.makeText(this@GameActivity, "青チームの勝利です", Toast.LENGTH_LONG).show()
+                                    if(numBlueCard == 0){
+                                        Toast.makeText(this@GameActivity, "青チームの勝利です", Toast.LENGTH_LONG).show()
+                                    }
                                 }
                             }
                             wordDataSavedToFirestore.set(index, grayCard)
@@ -216,7 +224,7 @@ class GameActivity : AppCompatActivity(), WaitingMembersFragment.OnFragmentWaiti
             selectedWordsList.set(blue[i], WordsData(selectedWordsList[blue[i]].word, "BLUE"))
         }
         //GRAY
-        val gray = list[24]
+        gray = list[24]
         selectedWordsList.set(gray, WordsData(selectedWordsList[gray].word, "GRAY"))
 
         wordDataSavedToFirestore = selectedWordsList
