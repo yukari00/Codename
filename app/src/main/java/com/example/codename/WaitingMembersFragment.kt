@@ -2,6 +2,7 @@ package com.example.codename
 
 import android.content.Context
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -59,8 +60,13 @@ class WaitingMembersFragment : Fragment() {
             .addOnSuccessListener {
                 val memberList: MutableList<String> = mutableListOf()
                 for (document in it) {
-                    memberList.add(document.getString("name")!!)
+                    if(document.getString("member").isNullOrEmpty()){
+                        memberList.add(document.getString("name")!!)
+                    }else{
+                        memberList.add(document.getString("member")!!)
+                    }
                 }
+                Log.d("memberList", "$memberList")
                 text_member_join.setText(memberList.joinToString())
                 text_member_join_num.setText("現在参加人数は${memberList.size}人です")
 

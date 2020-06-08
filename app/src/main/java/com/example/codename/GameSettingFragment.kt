@@ -104,13 +104,18 @@ class GameSettingFragment : Fragment() {
         database.collection(dbCollection).document(keyword).collection("members").get()
             .addOnSuccessListener {
                 for (document in it) {
-                    membersList.add(document.getString("name")!!)
+                    if(document.getString("member").isNullOrEmpty()){
+                        membersList.add(document.getString("name")!!)
+                    }else{
+                        membersList.add(document.getString("member")!!)
+                    }
                 }
 
                 if (status == Status.CREATE_ROOM) {
                     splitMembersToTwoTeam(membersList, nickname)
                 }
 
+                //Creatorがチームを作っている間にロード中ができたらいい（チーム編成が終わったらメンバーの画面が表示される）
                 val teamRed: MutableList<String> = mutableListOf()
                 val teamBlue: MutableList<String> = mutableListOf()
                 database.collection(dbCollection).document(keyword).collection("members")
@@ -125,6 +130,8 @@ class GameSettingFragment : Fragment() {
                                     teamBlue.add(document.getString("name")!!)
                                 }
 
+                                Log.d("チーム赤", "$teamRed")
+                                Log.d("チーム青", "$teamBlue")
                                 setSpinner(teamRed, teamBlue)
                                 individualsInfo(teamRed, teamBlue)
                             }
@@ -250,7 +257,7 @@ class GameSettingFragment : Fragment() {
 
         btn_change_leader.setOnClickListener {
 
-            val newHost = Member(host, isHost = true)
+            val newHost = Member(host, isMyTeam, isHost = true)
 
             database.collection(dbCollection).document(keyword).collection("members")
                 .document(nickname)

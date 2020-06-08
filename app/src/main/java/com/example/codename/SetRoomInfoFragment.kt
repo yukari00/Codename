@@ -11,6 +11,7 @@ import android.view.ViewGroup
 import android.widget.Toast
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.android.synthetic.main.fragment_type_room_info.*
+import kotlin.math.log
 
 class SetRoomInfoFragment : Fragment() {
 
@@ -46,22 +47,29 @@ class SetRoomInfoFragment : Fragment() {
 
     private fun joinRoom(nickname: String, keyword: String) {
 
-        val memberList = Member(nickname)
+        doNotUpdateIfYouJoinedBefore(nickname, keyword)
+    }
 
-        database.collection(dbCollection).document(keyword).collection("members").document(nickname)
-            .set(memberList)
+    private fun  doNotUpdateIfYouJoinedBefore(nickname: String, keyword: String) {
 
-
+        database.collection(dbCollection).document(keyword).collection("members").whereEqualTo("name", nickname).get().addOnSuccessListener {
+            if(it.isEmpty){
+                Log.d("IF this is Empty", "${it.isEmpty}")
+                val member = hashMapOf("member" to nickname)
+                database.collection(dbCollection).document(keyword).collection("members").document(nickname)
+                    .set(member)
+            }
+        }
     }
 
     private fun createRoom(nickname: String, keyword: String) {
 
         val newRoom = hashMapOf("keyword" to keyword)
-        val memberList = Member(nickname)
+        val member = hashMapOf("member" to nickname)
 
         database.collection(dbCollection).document(keyword).set(newRoom)
         database.collection(dbCollection).document(keyword).collection("members").document(nickname)
-            .set(memberList)
+            .set(member)
     }
 
     private fun createNickname(nickname: String, keyword: String): Boolean {
