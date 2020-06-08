@@ -132,6 +132,10 @@ class GameSettingFragment : Fragment() {
 
                                 Log.d("チーム赤", "$teamRed")
                                 Log.d("チーム青", "$teamBlue")
+
+                                text_red_mem_num.setText("赤チームの人数は${teamRed.size}人です")
+                                text_blue_mem_num.setText("青チームの人数は${teamBlue.size}人です")
+
                                 setSpinner(teamRed, teamBlue)
                                 individualsInfo(teamRed, teamBlue)
                             }
@@ -212,9 +216,6 @@ class GameSettingFragment : Fragment() {
 
         setSpinner(teamRed, teamBlue)
         individualsInfo(teamRed, teamBlue)
-
-        text_red_mem_num.setText("赤チームの人数は${teamRed.size}人です")
-        text_blue_mem_num.setText("青チームの人数は${teamBlue.size}人です")
 
     }
 
