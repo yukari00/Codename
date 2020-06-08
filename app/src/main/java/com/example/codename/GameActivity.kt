@@ -64,17 +64,6 @@ class GameActivity : AppCompatActivity(), WaitingMembersFragment.OnFragmentWaiti
 
     }
 
-    private fun checkScore(){
-        database.collection(dbCollection).document(keyword).collection("words")
-            .document(keyword).get().addOnSuccessListener {
-
-                var numRedCard = 0
-                var numBlueCard = 0
-
-
-            }
-    }
-
     private fun setCardWords(keyword: String) {
 
         list = mutableListOf()
