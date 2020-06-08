@@ -31,13 +31,6 @@ class GameActivity : AppCompatActivity(), WaitingMembersFragment.OnFragmentWaiti
     var keyword: String = ""
     var nickname: String = ""
 
-    var wordDataSavedToFirestore: MutableList<WordsData> = mutableListOf()
-
-    lateinit var red : MutableList<Int>
-    lateinit var blue: MutableList<Int>
-
-    var gray: Int = 0
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_game)
@@ -84,50 +77,44 @@ class GameActivity : AppCompatActivity(), WaitingMembersFragment.OnFragmentWaiti
 
     private fun showWords(list: List<WordsData>) {
 
-        var numRedCard = red.size
-        var numBlueCard = blue.size
         val clicedOnce = mutableListOf<Int>()
+        var wordDataSavedToFirestore: MutableList<HashMap<String, String>> = mutableListOf()
 
-        val adapter = CardAdapter(list, object : CardAdapter.OnCardAdapterListener{
+        val adapter = CardAdapter(list, object : CardAdapter.OnCardAdapterListener {
             override fun OnClickCard(word: String) {
-                val grayCard = WordsData(word, "OVER")
 
-                database.collection(dbCollection).document(keyword).collection("words").document(keyword)
+                database.collection(dbCollection).document(keyword).collection("words")
+                    .document(keyword)
                     .get().addOnSuccessListener {
                         val hashmap = it["words"] as List<HashMap<String, String>>
                         val index = hashmap.indexOfFirst { it.containsValue(word) }
 
-                        //赤のカードのindexと青のカードのindex
-                        if(!clicedOnce.contains(index)) {
+                        if (!clicedOnce.contains(index)) {
 
-                            if(index == gray)Toast.makeText(this@GameActivity, "ゲームオーバーです", Toast.LENGTH_LONG).show()
-                           
-                            for (i in 0 until red.size){
-                                if(index == red[i]){
-                                    numRedCard -= 1
-                                    if(numRedCard == 0) {
-                                        Toast.makeText(this@GameActivity, "赤チームの勝利です", Toast.LENGTH_LONG).show()
-                                    }
-                                }
-                            }
+                            if (hashmap[index]["color"] =="GRAY") Toast.makeText(this@GameActivity, "ゲームオーバーです", Toast.LENGTH_LONG).show()
 
-                            for(i in 0 until blue.size){
-                                if(index == blue[i]){
-                                    numBlueCard--
-                                    if(numBlueCard == 0){
-                                        Toast.makeText(this@GameActivity, "青チームの勝利です", Toast.LENGTH_LONG).show()
-                                    }
-                                }
-                            }
-                            wordDataSavedToFirestore.set(index, grayCard)
+
+                            if (hashmap.count { it["color"].equals("RED") } == 1 && hashmap[index]["color"] == "RED") Toast.makeText(this@GameActivity, "赤チームの勝利です", Toast.LENGTH_LONG).show()
+                            if (hashmap.count { it["color"].equals("BLUE") } == 1 && hashmap[index]["color"] == "BLUE") Toast.makeText(this@GameActivity, "青チームの勝利です", Toast.LENGTH_LONG).show()
+
+                            wordDataSavedToFirestore.set(index, hashMapOf("color" to "OVER", "word" to word))
                             val saveList = hashMapOf("words" to wordDataSavedToFirestore)
-                            database.collection(dbCollection).document(keyword).collection("words").document(keyword).set(saveList)
-                      }
+                            database.collection(dbCollection).document(keyword).collection("words")
+                                .document(keyword).set(saveList)
+                        }
 
                         clicedOnce.add(index)
 
+                    }
             }
-        }})
+        })
+
+        database.collection(dbCollection).document(keyword).collection("words").document(keyword)
+            .get().addOnSuccessListener{
+                val hashmap = it["words"] as MutableList<HashMap<String, String>>
+
+                wordDataSavedToFirestore = hashmap
+            }
 
        recycler_view.layoutManager = GridLayoutManager(this, 5)
        recycler_view.adapter = adapter
@@ -194,8 +181,8 @@ class GameActivity : AppCompatActivity(), WaitingMembersFragment.OnFragmentWaiti
 
         Collections.shuffle(list)
 
-       red = mutableListOf<Int>()
-       blue = mutableListOf<Int>()
+        val red = mutableListOf<Int>()
+        val blue = mutableListOf<Int>()
 
         //RED
         for (i in 0 ..7) {
@@ -213,11 +200,10 @@ class GameActivity : AppCompatActivity(), WaitingMembersFragment.OnFragmentWaiti
             selectedWordsList.set(blue[i], WordsData(selectedWordsList[blue[i]].word, "BLUE"))
         }
         //GRAY
-        gray = list[24]
+        val gray = list[24]
         selectedWordsList.set(gray, WordsData(selectedWordsList[gray].word, "GRAY"))
 
-        wordDataSavedToFirestore = selectedWordsList
-        val saveList = hashMapOf("words" to wordDataSavedToFirestore)
+        val saveList = hashMapOf("words" to selectedWordsList)
         database.collection(dbCollection).document(keyword).collection("words").document(keyword)
             .set(saveList)
 
