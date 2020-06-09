@@ -157,9 +157,13 @@ class GameSettingFragment : Fragment() {
         //ホストを取得
         showHost(myTeam)
 
-        if (myTeam == "RED") text_tell_which_team.setText("あなたは赤チームです") else text_tell_which_team.setText(
-            "あなたは青チームです"
-        )
+        if (myTeam == "RED") {
+            text_tell_which_team.setText("${nickname}さん、あなたは赤チームです")
+            text_my_team_members.setText("${teamRed.joinToString()}")
+        } else {
+            text_tell_which_team.setText("${nickname}さん、あなたは青チームです")
+            text_my_team_members.setText("${teamBlue.joinToString()}")
+        }
 
     }
 
@@ -180,9 +184,18 @@ class GameSettingFragment : Fragment() {
                        }
                    }
                     when(host){
-                        nickname -> text_if_leader.setText("あなたはリーダーです")
-                        "" -> text_if_leader.setText("話し合いでチームリーダを決めてくださいne")
-                        else -> text_if_leader.setText("あなたのチームのリーダーは${host}です")
+                        nickname -> {
+                            text_if_leader.setText("あなたはリーダーです")
+                            isHost = true
+                        }
+                        "" -> {
+                            text_if_leader.setText("話し合いでチームリーダを決めてください")
+                            isHost = false
+                        }
+                        else -> {
+                            text_if_leader.setText("あなたのチームのリーダーは${host}です")
+                            isHost = true
+                        }
                     }
                 }
             }
