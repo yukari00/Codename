@@ -33,6 +33,10 @@ class SetRoomInfoFragment : Fragment() {
             Status.JOIN_ROOM -> btn_go_next.text = "参加する"
         }
 
+        btn_go_back.setOnClickListener {
+            getFragmentManager()?.beginTransaction()?.remove(this)?.commit()
+        }
+
         btn_go_next.setOnClickListener {
             typeInfo()
         }

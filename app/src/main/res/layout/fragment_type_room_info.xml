@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/design_default_color_secondary_variant"
+    android:background="@color/WINE_RED"
     android:elevation="21dp"
     tools:context=".SetRoomInfoFragment">
 
@@ -15,18 +15,21 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="50dp"
         android:layout_marginEnd="50dp"
+        android:textColorHint="@color/WHITE"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintVertical_bias="0.3">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/input_edit_nickname"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:gravity="center"
             android:hint="ニックネーム"
-            android:gravity="center"/>
+            android:imeOptions="actionDone|actionNext"
+            android:textColor="@color/WHITE" />
     </com.google.android.material.textfield.TextInputLayout>
 
     <com.google.android.material.textfield.TextInputLayout
@@ -34,8 +37,9 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="50dp"
-        android:layout_marginEnd="50dp"
         android:layout_marginTop="40dp"
+        android:layout_marginEnd="50dp"
+        android:textColorHint="@color/WHITE"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/input_nickname">
@@ -44,8 +48,10 @@
             android:id="@+id/input_edit_keyword"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:gravity="center"
             android:hint="キーワード"
-            android:gravity="center"/>
+            android:imeOptions="actionDone|actionNext"
+            android:textColor="@color/WHITE" />
     </com.google.android.material.textfield.TextInputLayout>
 
     <Button
@@ -53,9 +59,18 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="作成"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/input_keyword"
-        app:layout_constraintBottom_toBottomOf="parent"/>
+        app:layout_constraintTop_toBottomOf="@id/input_keyword" />
+
+    <Button
+        android:id="@+id/btn_go_back"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="閉じる"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/btn_go_next" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
