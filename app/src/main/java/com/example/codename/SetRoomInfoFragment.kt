@@ -28,6 +28,11 @@ class SetRoomInfoFragment : Fragment() {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
 
+        when(status){
+            Status.CREATE_ROOM -> btn_go_next.text = "作成する"
+            Status.JOIN_ROOM -> btn_go_next.text = "参加する"
+        }
+
         btn_go_next.setOnClickListener {
             typeInfo()
         }

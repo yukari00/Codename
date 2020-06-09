@@ -8,4 +8,7 @@
     <color name="BLUE">#2E86C1</color>
     <color name="GRAY">#17202A</color>
     <color name="LIGHT_GRAY">#68737E</color>
+    <color name="WHITE">#FDFEFE</color>
+    <color name="WINE_RED">#78281F</color>
+    <color name="NAVY">#123F6D</color>
 </resources>
