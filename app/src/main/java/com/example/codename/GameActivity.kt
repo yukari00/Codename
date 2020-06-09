@@ -6,7 +6,9 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.ArrayMap
 import android.util.Log
+import android.view.View
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.FragmentActivity
 import androidx.recyclerview.widget.GridLayoutManager
 import com.google.firebase.firestore.DocumentReference
@@ -15,6 +17,7 @@ import com.opencsv.CSVParserBuilder
 import com.opencsv.CSVReader
 import com.opencsv.CSVReaderBuilder
 import kotlinx.android.synthetic.main.activity_game.*
+import kotlinx.android.synthetic.main.card_words.view.*
 import org.apache.commons.lang3.mutable.Mutable
 import java.io.IOException
 import java.io.InputStreamReader
@@ -81,31 +84,19 @@ class GameActivity : AppCompatActivity(), WaitingMembersFragment.OnFragmentWaiti
         var wordDataSavedToFirestore: MutableList<HashMap<String, String>> = mutableListOf()
 
         val adapter = CardAdapter(list, object : CardAdapter.OnCardAdapterListener {
-            override fun OnClickCard(word: String) {
+            override fun OnClickCard(word: String, wordsData: WordsData, holder: CardAdapter.ViewHolder) {
 
-                database.collection(dbCollection).document(keyword).collection("words")
-                    .document(keyword)
-                    .get().addOnSuccessListener {
-                        val hashmap = it["words"] as List<HashMap<String, String>>
-                        val index = hashmap.indexOfFirst { it.containsValue(word) }
+                AlertDialog.Builder(this@GameActivity).apply {
+                    setTitle("選択")
+                    setMessage("${word}を選択しますか？")
+                    setPositiveButton("選択"){ dialog, which ->
 
-                        if (!clicedOnce.contains(index)) {
-
-                            if (hashmap[index]["color"] =="GRAY") Toast.makeText(this@GameActivity, "ゲームオーバーです", Toast.LENGTH_LONG).show()
-
-
-                            if (hashmap.count { it["color"].equals("RED") } == 1 && hashmap[index]["color"] == "RED") Toast.makeText(this@GameActivity, "赤チームの勝利です", Toast.LENGTH_LONG).show()
-                            if (hashmap.count { it["color"].equals("BLUE") } == 1 && hashmap[index]["color"] == "BLUE") Toast.makeText(this@GameActivity, "青チームの勝利です", Toast.LENGTH_LONG).show()
-
-                            wordDataSavedToFirestore.set(index, hashMapOf("color" to "OVER", "word" to word))
-                            val saveList = hashMapOf("words" to wordDataSavedToFirestore)
-                            database.collection(dbCollection).document(keyword).collection("words")
-                                .document(keyword).set(saveList)
-                        }
-
-                        clicedOnce.add(index)
-
+                        selectedCard(clicedOnce, wordDataSavedToFirestore, word, wordsData, holder)
                     }
+                    setNegativeButton("キャンセル"){ dialog, which ->  }
+                    show()
+                }
+
             }
         })
 
@@ -119,6 +110,51 @@ class GameActivity : AppCompatActivity(), WaitingMembersFragment.OnFragmentWaiti
        recycler_view.layoutManager = GridLayoutManager(this, 5)
        recycler_view.adapter = adapter
 
+    }
+
+    private fun selectedCard(clicedOnce: MutableList<Int>, wordDataSavedToFirestore: MutableList<HashMap<String, String>>, word: String, wordsData: WordsData, holder: CardAdapter.ViewHolder) {
+
+        when(wordsData.color){
+            "RED" -> {
+                holder.itemView.card_view.setBackgroundResource(R.color.RED)
+                holder.color.setBackgroundResource(R.color.RED)
+            }
+            "BLUE" -> {
+                holder.itemView.card_view.setBackgroundResource(R.color.BLUE)
+                holder.color.setBackgroundResource(R.color.BLUE)
+            }
+            "GRAY" -> {
+                holder.itemView.card_view.setBackgroundResource(R.color.GRAY)
+                holder.color.setBackgroundResource(R.color.GRAY)
+            }
+            else -> {
+                holder.itemView.card_view.setBackgroundResource(R.color.LIGHT_GRAY)
+                holder.color.setBackgroundResource(R.color.LIGHT_GRAY)
+            }
+        }
+        database.collection(dbCollection).document(keyword).collection("words")
+            .document(keyword)
+            .get().addOnSuccessListener {
+                val hashmap = it["words"] as List<HashMap<String, String>>
+                val index = hashmap.indexOfFirst { it.containsValue(word) }
+
+                if (!clicedOnce.contains(index)) {
+
+                    if (hashmap[index]["color"] =="GRAY") Toast.makeText(this@GameActivity, "ゲームオーバーです", Toast.LENGTH_LONG).show()
+
+
+                    if (hashmap.count { it["color"].equals("RED") } == 1 && hashmap[index]["color"] == "RED") Toast.makeText(this@GameActivity, "赤チームの勝利です", Toast.LENGTH_LONG).show()
+                    if (hashmap.count { it["color"].equals("BLUE") } == 1 && hashmap[index]["color"] == "BLUE") Toast.makeText(this@GameActivity, "青チームの勝利です", Toast.LENGTH_LONG).show()
+
+                    wordDataSavedToFirestore.set(index, hashMapOf("color" to "OVER", "word" to word))
+                    val saveList = hashMapOf("words" to wordDataSavedToFirestore)
+                    database.collection(dbCollection).document(keyword).collection("words")
+                        .document(keyword).set(saveList)
+                }
+
+                clicedOnce.add(index)
+
+            }
     }
 
 

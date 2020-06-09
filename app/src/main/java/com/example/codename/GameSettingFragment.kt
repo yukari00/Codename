@@ -56,7 +56,6 @@ class GameSettingFragment : Fragment() {
         super.onActivityCreated(savedInstanceState)
 
         update()
-
         btn_prepared.setOnClickListener {
             //Todo 準備完了ボタン処
             when (isPrepared) {
@@ -174,27 +173,29 @@ class GameSettingFragment : Fragment() {
             .whereEqualTo("host", true).get().addOnSuccessListener {
                 if (it.isEmpty) {
                     text_if_leader.setText("話し合いでチームリーダを決めてください")
+                    btn_prepared.isEnabled = false
                 }
                 else {
-                   for(document in it){
+                    btn_prepared.isEnabled = it.size() == 2
 
+                   for(document in it){
                        if(document.getString("team") == myTeam){
 
                            host = document.getString("name")
                        }
                    }
-                    when(host){
+                    isHost = when(host){
                         nickname -> {
                             text_if_leader.setText("あなたはリーダーです")
-                            isHost = true
+                            true
                         }
                         "" -> {
                             text_if_leader.setText("話し合いでチームリーダを決めてください")
-                            isHost = false
+                            false
                         }
                         else -> {
                             text_if_leader.setText("あなたのチームのリーダーは${host}です")
-                            isHost = true
+                            false
                         }
                     }
                 }
@@ -283,7 +284,7 @@ class GameSettingFragment : Fragment() {
             Log.d("HOST", "$host")
 
             val newHost = Member(host, isMyTeam, isHost = true)
-            Log.d("LISTNOTSELECTED", "$listNotSelected")
+
             listNotSelected.forEach {
                 database.collection(dbCollection).document(keyword).collection("members")
                     .document(it)
