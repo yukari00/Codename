@@ -1,5 +1,6 @@
 package com.example.codename
 
+import android.app.AlertDialog
 import android.content.Context
 import android.os.Bundle
 import android.util.Log
@@ -36,6 +37,7 @@ class GameSettingFragment : Fragment() {
     interface OnFragmentGameSettingListener {
 
         fun GameStart()
+        fun OnDeleted()
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -80,6 +82,25 @@ class GameSettingFragment : Fragment() {
             //ランダムにチーム再編成
             splitMembersToTwoTeam(membersList)
         }
+
+        btn_leave_room.setOnClickListener {
+            AlertDialog.Builder(activity).apply {
+                setTitle("退出")
+                setMessage("退出しますか？")
+                setPositiveButton("退出する"){dialog, which ->
+                    deleteMemberInfo()
+                }
+                setNegativeButton("キャンセル"){dialog, which ->  }
+                show()
+            }
+        }
+
+    }
+
+    private fun deleteMemberInfo() {
+
+        listener?.OnDeleted()
+        getFragmentManager()?.beginTransaction()?.remove(this)?.commit()
 
     }
 

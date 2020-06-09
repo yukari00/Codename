@@ -189,6 +189,12 @@ class GameActivity : AppCompatActivity(), WaitingMembersFragment.OnFragmentWaiti
         setCardWords(keyword)
     }
 
+    //GameSettingFragment.OnFragmentGameSettingListener
+    override fun OnDeleted() {
+        database.collection(dbCollection).document(keyword).collection("members").document(nickname).delete()
+        finish()
+    }
+
 
     private fun importWordsFromCSV() {
 
