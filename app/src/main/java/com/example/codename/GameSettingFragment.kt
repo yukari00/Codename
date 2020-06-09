@@ -38,6 +38,7 @@ class GameSettingFragment : Fragment() {
 
         fun GameStart()
         fun OnDeleted()
+        fun OnRoomDeleted(membersList: MutableList<String>)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -87,14 +88,36 @@ class GameSettingFragment : Fragment() {
             AlertDialog.Builder(activity).apply {
                 setTitle("退出")
                 setMessage("退出しますか？")
-                setPositiveButton("退出する"){dialog, which ->
-                    deleteMemberInfo()
+                setPositiveButton("退出する") { dialog, which ->
+                    if (membersList.size <= 4) {
+                        Log.d("!!!!!!!!!!!!!!", "${membersList.size}")
+                        membersLessThanFour(membersList)
+                    } else{
+                        deleteMemberInfo()
+                    }
                 }
                 setNegativeButton("キャンセル"){dialog, which ->  }
                 show()
             }
         }
 
+    }
+
+    private fun membersLessThanFour(membersList: MutableList<String>) {
+        AlertDialog.Builder(activity).apply {
+            setTitle("注意")
+            setMessage("${nickname}さんが退出すると参加メンバーの人数が４人未満になるのでルームが強制的に削除されますが、良いですか？")
+            setPositiveButton("はい") { dialog, which ->
+                deleteRoom(membersList)
+            }
+            setNegativeButton("キャンセル") { dialog, which -> }
+            show()
+        }
+    }
+
+    private fun deleteRoom(membersList: MutableList<String>){
+        listener?.OnRoomDeleted(membersList)
+        getFragmentManager()?.beginTransaction()?.remove(this)?.commit()
     }
 
     private fun deleteMemberInfo() {

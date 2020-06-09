@@ -195,6 +195,15 @@ class GameActivity : AppCompatActivity(), WaitingMembersFragment.OnFragmentWaiti
         finish()
     }
 
+    override fun OnRoomDeleted(membersList: MutableList<String>) {
+        membersList.forEach {
+            database.collection(dbCollection).document(keyword).collection("members").document(it).delete()
+        }
+        database.collection(dbCollection).document(keyword).collection("words").document(keyword).delete()
+        database.collection(dbCollection).document(keyword).delete()
+        finish()
+    }
+
 
     private fun importWordsFromCSV() {
 
