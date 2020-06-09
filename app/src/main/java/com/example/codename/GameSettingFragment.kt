@@ -57,6 +57,7 @@ class GameSettingFragment : Fragment() {
 
         update()
         btn_prepared.setOnClickListener {
+            soundPool?.play2(soundIdButtonClicked)
             //Todo 準備完了ボタン処
             when (isPrepared) {
                 false -> {
@@ -277,6 +278,7 @@ class GameSettingFragment : Fragment() {
             }
 
         btn_change_leader.setOnClickListener {
+            soundPool?.play2(soundIdButtonClicked)
 
             if(host == nickname) isHost = true
             Log.d("MEMBER", "$isHost")

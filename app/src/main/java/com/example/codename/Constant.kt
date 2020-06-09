@@ -1,5 +1,7 @@
 package com.example.codename
 
+import android.media.SoundPool
+
 const val dbCollection = "COLLECTION"
 
 enum class Status{
@@ -17,3 +19,9 @@ var isDataFinished = false
 var status: Status = Status.JOIN_ROOM
 
 var isHost = false
+
+var soundPool: SoundPool? = null
+
+var soundIdCorrect = 0
+var soundIdIncorrect = 0
+var soundIdButtonClicked = 0

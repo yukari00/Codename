@@ -74,6 +74,7 @@ class WaitingMembersFragment : Fragment() {
             }
 
         btn_game_start.setOnClickListener {
+            soundPool?.play2(soundIdButtonClicked)
             listener?.OnMembersGathered()
             getFragmentManager()?.beginTransaction()?.remove(this)?.commit();
         }

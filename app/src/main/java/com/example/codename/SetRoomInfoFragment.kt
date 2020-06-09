@@ -34,10 +34,12 @@ class SetRoomInfoFragment : Fragment() {
         }
 
         btn_go_back.setOnClickListener {
+            soundPool?.play2(soundIdButtonClicked)
             getFragmentManager()?.beginTransaction()?.remove(this)?.commit()
         }
 
         btn_go_next.setOnClickListener {
+            soundPool?.play2(soundIdButtonClicked)
             typeInfo()
         }
 
