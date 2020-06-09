@@ -9,51 +9,53 @@
 
     <TextView
         android:id="@+id/text_tell_which_team"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
         android:layout_marginTop="16dp"
         android:text="あなたは赤チームです"
+        android:gravity="center"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/text_blue_mem_num" />
 
     <TextView
         android:id="@+id/text_if_leader"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
         android:layout_marginTop="8dp"
         android:text="あなたはリーダーです"
+        android:gravity="center"
         app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@id/text_tell_which_team" />
 
 
     <LinearLayout
         android:id="@+id/linear"
-        android:layout_width="0dp"
+        android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_marginTop="16dp"
         android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
         android:layout_marginEnd="16dp"
-        android:orientation="horizontal"
+        android:orientation="vertical"
         app:layout_constraintBottom_toTopOf="@+id/linearLayout"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/text_if_leader"
-        app:layout_constraintVertical_bias="1.0">
+        app:layout_constraintVertical_bias="0.0">
 
         <TextView
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="あなたの仲間は" />
+            android:text="あなたの仲間は..."
+            android:gravity="center"/>
 
         <TextView
             android:id="@+id/text_my_team_members"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_marginStart="16dp"
-            android:text="" />
+            android:gravity="center"/>
     </LinearLayout>
 
     <LinearLayout
@@ -65,7 +67,7 @@
         app:layout_constraintBottom_toTopOf="@+id/btn_prepared"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+        app:layout_constraintTop_toBottomOf="@id/linear" >
 
         <TextView
             android:id="@+id/textView2"
@@ -91,6 +93,16 @@
     </LinearLayout>
 
     <Button
+        android:id="@+id/btn_leave_room"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="退出する"
+        android:textSize="14sp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"/>
+
+
+    <Button
         android:id="@+id/btn_team_random"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -104,8 +116,7 @@
         android:layout_height="wrap_content"
         android:text="準備完了"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintEnd_toEndOf="parent" />
 
     <TextView
         android:id="@+id/text_red_mem_num"
@@ -114,6 +125,7 @@
         android:layout_marginTop="16dp"
         android:layout_marginEnd="16dp"
         android:text="赤チーム人数"
+        android:textSize="12dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -124,6 +136,7 @@
         android:layout_marginTop="8dp"
         android:layout_marginEnd="16dp"
         android:text="青チーム人数"
+        android:textSize="12dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@id/text_red_mem_num" />
 
