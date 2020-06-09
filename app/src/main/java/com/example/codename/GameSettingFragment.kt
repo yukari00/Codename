@@ -31,6 +31,8 @@ class GameSettingFragment : Fragment() {
     var listener: OnFragmentGameSettingListener? = null
     lateinit var adapter: ArrayAdapter<String>
 
+    val membersList: MutableList<String> = mutableListOf()
+
     interface OnFragmentGameSettingListener {
 
         fun GameStart()
@@ -75,7 +77,8 @@ class GameSettingFragment : Fragment() {
         }
 
         btn_team_random.setOnClickListener {
-            //Todo ランダムにチーム再編成
+            //ランダムにチーム再編成
+            splitMembersToTwoTeam(membersList)
         }
 
     }
@@ -99,8 +102,6 @@ class GameSettingFragment : Fragment() {
 
     private fun update() {
 
-        val membersList: MutableList<String> = mutableListOf()
-
         database.collection(dbCollection).document(keyword).collection("members").get()
             .addOnSuccessListener {
                 for (document in it) {
@@ -113,7 +114,7 @@ class GameSettingFragment : Fragment() {
 
                 if (status == Status.CREATE_ROOM) {
 
-                    splitMembersToTwoTeam(membersList, nickname)
+                    splitMembersToTwoTeam(membersList)
 
                 } else {
                     val teamRed: MutableList<String> = mutableListOf()
@@ -203,7 +204,7 @@ class GameSettingFragment : Fragment() {
             }
     }
 
-    private fun splitMembersToTwoTeam(membersList: MutableList<String>, nickname: String) {
+    private fun splitMembersToTwoTeam(membersList: MutableList<String>) {
 
         Collections.shuffle(membersList)
 
@@ -242,7 +243,7 @@ class GameSettingFragment : Fragment() {
 
         var host: String = ""
         var listNotSelected = mutableListOf<String>()
-        val isMyTeam = if (teamRed.contains(nickname)) {
+        isMyTeam = if (teamRed.contains(nickname)) {
             Team.RED
         } else Team.BLUE
 

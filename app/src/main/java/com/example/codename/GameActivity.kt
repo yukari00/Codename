@@ -140,8 +140,14 @@ class GameActivity : AppCompatActivity(), WaitingMembersFragment.OnFragmentWaiti
 
                 if (!clicedOnce.contains(index)) {
 
-                    if (hashmap[index]["color"] =="GRAY") Toast.makeText(this@GameActivity, "ゲームオーバーです", Toast.LENGTH_LONG).show()
-
+                    when(hashmap[index]["color"]){
+                        "RED" -> if(isMyTeam == Team.RED) soundPool?.play2(soundIdCorrect)
+                        "BLUE" -> if(isMyTeam == Team.BLUE) soundPool?.play2(soundIdCorrect)
+                        "GRAY" -> {
+                            soundPool?.play2(soundIdIncorrect)
+                            Toast.makeText(this@GameActivity, "ゲームオーバーです", Toast.LENGTH_LONG).show()
+                        }
+                    }
 
                     if (hashmap.count { it["color"].equals("RED") } == 1 && hashmap[index]["color"] == "RED") Toast.makeText(this@GameActivity, "赤チームの勝利です", Toast.LENGTH_LONG).show()
                     if (hashmap.count { it["color"].equals("BLUE") } == 1 && hashmap[index]["color"] == "BLUE") Toast.makeText(this@GameActivity, "青チームの勝利です", Toast.LENGTH_LONG).show()

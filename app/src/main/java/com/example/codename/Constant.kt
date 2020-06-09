@@ -19,6 +19,7 @@ var isDataFinished = false
 var status: Status = Status.JOIN_ROOM
 
 var isHost = false
+var isMyTeam = Team.RED
 
 var soundPool: SoundPool? = null
 
