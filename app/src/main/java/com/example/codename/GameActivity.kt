@@ -186,6 +186,8 @@ class GameActivity : AppCompatActivity(), OnFragmentListener{
     //GameSettingFragment.OnFragmentGameSettingListener
     override fun GameStart() {
         setCardWords(keyword)
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.container_game_detail, GameHostFragment()).commit()
     }
 
     override fun OnMemberDeleted() {
