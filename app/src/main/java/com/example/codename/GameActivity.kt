@@ -25,8 +25,7 @@ import java.util.*
 import kotlin.collections.HashMap
 import kotlin.random.Random
 
-class GameActivity : AppCompatActivity(), WaitingMembersFragment.OnFragmentWaitingListener,
-    GameSettingFragment.OnFragmentGameSettingListener{
+class GameActivity : AppCompatActivity(), OnFragmentListener{
 
     val database = FirebaseFirestore.getInstance()
     lateinit var list: MutableList<WordsData>
@@ -189,12 +188,6 @@ class GameActivity : AppCompatActivity(), WaitingMembersFragment.OnFragmentWaiti
         setCardWords(keyword)
     }
 
-    //GameSettingFragment.OnFragmentGameSettingListener
-    override fun OnDeleted() {
-        database.collection(dbCollection).document(keyword).collection("members").document(nickname).delete()
-        finish()
-    }
-
     override fun OnMemberDeleted() {
         database.collection(dbCollection).document(keyword).collection("members").document(nickname).delete()
         finish()
@@ -203,15 +196,6 @@ class GameActivity : AppCompatActivity(), WaitingMembersFragment.OnFragmentWaiti
     //GameSettingFragment.OnFragmentGameSettingListener
     override fun OnRoomDeleted(membersList: MutableList<String>) {
         membersList.forEach {
-            database.collection(dbCollection).document(keyword).collection("members").document(it).delete()
-        }
-        database.collection(dbCollection).document(keyword).collection("words").document(keyword).delete()
-        database.collection(dbCollection).document(keyword).delete()
-        finish()
-    }
-
-    override fun OnRoomDeletedFromWaitingFragment(memberList: MutableList<String>) {
-        memberList.forEach {
             database.collection(dbCollection).document(keyword).collection("members").document(it).delete()
         }
         database.collection(dbCollection).document(keyword).collection("words").document(keyword).delete()

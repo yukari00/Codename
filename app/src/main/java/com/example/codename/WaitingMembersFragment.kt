@@ -17,18 +17,12 @@ class WaitingMembersFragment : Fragment() {
     private var keyword: String = ""
     private var nickname: String = ""
 
-    var listener: OnFragmentWaitingListener? = null
+    var listener: OnFragmentListener? = null
     val database = FirebaseFirestore.getInstance()
-
-    interface OnFragmentWaitingListener{
-        fun OnMembersGathered()
-        fun OnMemberDeleted()
-        fun OnRoomDeletedFromWaitingFragment(memberList: MutableList<String>)
-    }
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
-        if (context is OnFragmentWaitingListener) {
+        if (context is OnFragmentListener) {
             listener = context
         } else {
             throw RuntimeException(context.toString() + " must implement OnListFragmentInteractionListener")
@@ -112,7 +106,7 @@ class WaitingMembersFragment : Fragment() {
             setMessage("ルーム作成者である${nickname}さんが退出した場合、ルームは削除され現在ルーム内に居る全プレイヤーが強制的に退出させられることになりますが、よろしいですか？")
             setPositiveButton("はい"){dialog, which ->
 
-                listener?.OnRoomDeletedFromWaitingFragment(memberList)
+                listener?.OnRoomDeleted(memberList)
                 getFragmentManager()?.beginTransaction()?.remove(this@WaitingMembersFragment)?.commit()
             }
             setNegativeButton("キャンセル"){dialog, which ->  }

@@ -29,17 +29,10 @@ class GameSettingFragment : Fragment() {
 
     val database = FirebaseFirestore.getInstance()
 
-    var listener: OnFragmentGameSettingListener? = null
+    var listener: OnFragmentListener? = null
     lateinit var adapter: ArrayAdapter<String>
 
     val membersList: MutableList<String> = mutableListOf()
-
-    interface OnFragmentGameSettingListener {
-
-        fun GameStart()
-        fun OnDeleted()
-        fun OnRoomDeleted(membersList: MutableList<String>)
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -85,22 +78,26 @@ class GameSettingFragment : Fragment() {
         }
 
         btn_leave_room.setOnClickListener {
-            AlertDialog.Builder(activity).apply {
-                setTitle("退出")
-                setMessage("退出しますか？")
-                setPositiveButton("退出する") { dialog, which ->
-                    if (membersList.size <= 4) {
-                        Log.d("!!!!!!!!!!!!!!", "${membersList.size}")
-                        membersLessThanFour(membersList)
-                    } else{
-                        deleteMemberInfo()
-                    }
-                }
-                setNegativeButton("キャンセル"){dialog, which ->  }
-                show()
-            }
+
+            leaveRoom()
         }
 
+    }
+
+    private fun leaveRoom() {
+        AlertDialog.Builder(activity).apply {
+            setTitle("退出")
+            setMessage("退出しますか？")
+            setPositiveButton("退出する") { dialog, which ->
+                if (membersList.size <= 4) {
+                    membersLessThanFour(membersList)
+                } else{
+                    deleteMemberInfo()
+                }
+            }
+            setNegativeButton("キャンセル"){dialog, which ->  }
+            show()
+        }
     }
 
     private fun membersLessThanFour(membersList: MutableList<String>) {
@@ -122,14 +119,14 @@ class GameSettingFragment : Fragment() {
 
     private fun deleteMemberInfo() {
 
-        listener?.OnDeleted()
+        listener?.OnMemberDeleted()
         getFragmentManager()?.beginTransaction()?.remove(this)?.commit()
 
     }
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
-        if (context is OnFragmentGameSettingListener) {
+        if (context is OnFragmentListener) {
             listener = context
         } else {
             throw RuntimeException(context.toString() + " must implement OnListFragmentInteractionListener")
