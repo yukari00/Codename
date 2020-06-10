@@ -195,6 +195,12 @@ class GameActivity : AppCompatActivity(), WaitingMembersFragment.OnFragmentWaiti
         finish()
     }
 
+    override fun OnMemberDeleted() {
+        database.collection(dbCollection).document(keyword).collection("members").document(nickname).delete()
+        finish()
+    }
+
+    //GameSettingFragment.OnFragmentGameSettingListener
     override fun OnRoomDeleted(membersList: MutableList<String>) {
         membersList.forEach {
             database.collection(dbCollection).document(keyword).collection("members").document(it).delete()
@@ -204,6 +210,14 @@ class GameActivity : AppCompatActivity(), WaitingMembersFragment.OnFragmentWaiti
         finish()
     }
 
+    override fun OnRoomDeletedFromWaitingFragment(memberList: MutableList<String>) {
+        memberList.forEach {
+            database.collection(dbCollection).document(keyword).collection("members").document(it).delete()
+        }
+        database.collection(dbCollection).document(keyword).collection("words").document(keyword).delete()
+        database.collection(dbCollection).document(keyword).delete()
+        finish()
+    }
 
     private fun importWordsFromCSV() {
 

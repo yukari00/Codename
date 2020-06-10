@@ -21,6 +21,8 @@ class WaitingMembersFragment : Fragment() {
 
     interface OnFragmentWaitingListener{
         fun OnMembersGathered()
+        fun OnMemberDeleted()
+        fun OnRoomDeletedFromWaitingFragment(memberList: MutableList<String>)
     }
 
     override fun onAttach(context: Context) {
@@ -56,9 +58,10 @@ class WaitingMembersFragment : Fragment() {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
 
+        val memberList: MutableList<String> = mutableListOf()
         database.collection(dbCollection).document(keyword).collection("members").get()
             .addOnSuccessListener {
-                val memberList: MutableList<String> = mutableListOf()
+
                 for (document in it) {
                     if(document.getString("member").isNullOrEmpty()){
                         memberList.add(document.getString("name")!!)
@@ -78,6 +81,25 @@ class WaitingMembersFragment : Fragment() {
             listener?.OnMembersGathered()
             getFragmentManager()?.beginTransaction()?.remove(this)?.commit();
         }
+
+        btn_go_back.setOnClickListener {
+            soundPool?.play2(soundIdButtonClicked)
+            when(status){
+                Status.CREATE_ROOM -> deleteRoom(memberList)
+                Status.JOIN_ROOM -> deleteMemberInfo()
+            }
+
+        }
+    }
+
+    private fun deleteMemberInfo() {
+        listener?.OnMemberDeleted()
+        getFragmentManager()?.beginTransaction()?.remove(this)?.commit()
+    }
+
+    private fun deleteRoom(memberList: MutableList<String>) {
+        listener?.OnRoomDeletedFromWaitingFragment(memberList)
+        getFragmentManager()?.beginTransaction()?.remove(this)?.commit()
     }
 
     companion object {
