@@ -1,5 +1,6 @@
 package com.example.codename
 
+import android.app.AlertDialog
 import android.content.Context
 import android.os.Bundle
 import android.util.Log
@@ -93,13 +94,31 @@ class WaitingMembersFragment : Fragment() {
     }
 
     private fun deleteMemberInfo() {
-        listener?.OnMemberDeleted()
-        getFragmentManager()?.beginTransaction()?.remove(this)?.commit()
+        AlertDialog.Builder(activity).apply {
+            setTitle("退出")
+            setMessage("退出しますか？")
+            setPositiveButton("退出する"){dialog, which ->
+                listener?.OnMemberDeleted()
+                getFragmentManager()?.beginTransaction()?.remove(this@WaitingMembersFragment)?.commit()
+            }
+            setNegativeButton("キャンセル"){dialog, which ->  }
+            show()
+        }
     }
 
     private fun deleteRoom(memberList: MutableList<String>) {
-        listener?.OnRoomDeletedFromWaitingFragment(memberList)
-        getFragmentManager()?.beginTransaction()?.remove(this)?.commit()
+        AlertDialog.Builder(activity).apply {
+            setTitle("注意")
+            setMessage("ルーム作成者である${nickname}さんが退出した場合、ルームは削除され現在ルーム内に居る全プレイヤーが強制的に退出させられることになりますが、よろしいですか？")
+            setPositiveButton("はい"){dialog, which ->
+
+                listener?.OnRoomDeletedFromWaitingFragment(memberList)
+                getFragmentManager()?.beginTransaction()?.remove(this@WaitingMembersFragment)?.commit()
+            }
+            setNegativeButton("キャンセル"){dialog, which ->  }
+            show()
+        }
+
     }
 
     companion object {
