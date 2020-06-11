@@ -37,6 +37,8 @@ class GameActivity : AppCompatActivity(), OnFragmentListener{
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_game)
 
+        btn_explain.visibility = View.INVISIBLE
+
         if (intent.extras == null) {
             //Todo エラー処理
             finish()
@@ -109,6 +111,8 @@ class GameActivity : AppCompatActivity(), OnFragmentListener{
        recycler_view.layoutManager = GridLayoutManager(this, 5)
        recycler_view.adapter = adapter
 
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.container_game_detail, GameWaitingFragment()).commit()
     }
 
     private fun selectedCard(clicedOnce: MutableList<Int>, wordDataSavedToFirestore: MutableList<HashMap<String, String>>, word: String, wordsData: WordsData, holder: CardAdapter.ViewHolder) {
@@ -186,8 +190,7 @@ class GameActivity : AppCompatActivity(), OnFragmentListener{
     //GameSettingFragment.OnFragmentGameSettingListener
     override fun GameStart() {
         setCardWords(keyword)
-        supportFragmentManager.beginTransaction()
-            .replace(R.id.container_game_detail, GameHostFragment()).commit()
+        btn_explain.visibility = View.VISIBLE
     }
 
     override fun OnMemberDeleted() {
