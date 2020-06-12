@@ -11,10 +11,7 @@ import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.Spinner
-import com.google.firebase.firestore.DocumentReference
-import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.QueryDocumentSnapshot
-import com.google.firebase.firestore.QuerySnapshot
+import com.google.firebase.firestore.*
 import com.google.protobuf.Empty
 import kotlinx.android.synthetic.main.fragment_game_setting.*
 import java.util.*
@@ -25,14 +22,20 @@ class GameSettingFragment : Fragment() {
     private var keyword: String = ""
     private var nickname: String = ""
 
-    var isPrepared: Boolean? = false
+    private var isPrepared: Boolean? = false
 
-    val database = FirebaseFirestore.getInstance()
+    private val database = FirebaseFirestore.getInstance()
 
-    var listener: OnFragmentListener? = null
-    lateinit var adapter: ArrayAdapter<String>
+    private var listener: OnFragmentListener? = null
+    private lateinit var adapter: ArrayAdapter<String>
 
-    val membersList: MutableList<String> = mutableListOf()
+    private var membersList: MutableList<String> = mutableListOf()
+
+    private lateinit var listeningUpdate: ListenerRegistration
+    private lateinit var listeningGetTwoTeam: ListenerRegistration
+    private lateinit var listeningGetBlueTeam: ListenerRegistration
+    private lateinit var listeningHost: ListenerRegistration
+    private lateinit var listeningHostInfo: ListenerRegistration
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -137,56 +140,80 @@ class GameSettingFragment : Fragment() {
         super.onDetach()
         listener = null
         adapter.clear()
-
+        listeningUpdate.remove()
     }
-
 
     private fun update() {
 
-        database.collection(dbCollection).document(keyword).collection("members").get()
-            .addOnSuccessListener {
+        listeningUpdate = database.collection(dbCollection).document(keyword).collection("members").addSnapshotListener { it, e->
+
+            val membersListUpdate: MutableList<String> = mutableListOf()
+
+            if(e != null) return@addSnapshotListener
+
+            if(it == null || it.isEmpty) return@addSnapshotListener
+            for (document in it) {
+                if(document.getString("member").isNullOrEmpty()){
+                    membersListUpdate.add(document.getString("name")!!)
+                }else{
+                    membersListUpdate.add(document.getString("member")!!)
+                }
+            }
+
+            membersList = membersListUpdate
+
+            if (status == Status.CREATE_ROOM) {
+
+                splitMembersToTwoTeam(membersListUpdate)
+
+            }else getTwoTeamInfoFromFirestore()
+        }
+
+
+}
+
+    private fun getTwoTeamInfoFromFirestore() {
+
+       listeningGetTwoTeam =  database.collection(dbCollection).document(keyword).collection("members")
+            .whereEqualTo("team", "RED").addSnapshotListener { it, e ->
+                val teamRed: MutableList<String> = mutableListOf()
+
+                if (e != null) return@addSnapshotListener
+
+                if(it == null || it.isEmpty) return@addSnapshotListener
                 for (document in it) {
-                    if(document.getString("member").isNullOrEmpty()){
-                        membersList.add(document.getString("name")!!)
-                    }else{
-                        membersList.add(document.getString("member")!!)
-                    }
+                    teamRed.add(document.getString("name")!!)
                 }
 
-                if (status == Status.CREATE_ROOM) {
-
-                    splitMembersToTwoTeam(membersList)
-
-                } else {
-                    val teamRed: MutableList<String> = mutableListOf()
-                    val teamBlue: MutableList<String> = mutableListOf()
-                    database.collection(dbCollection).document(keyword).collection("members")
-                        .whereEqualTo("team", "RED").get().addOnSuccessListener {
-                            for (document in it) {
-                                teamRed.add(document.getString("name")!!)
-                            }
-
-                            database.collection(dbCollection).document(keyword).collection("members")
-                                .whereEqualTo("team", "BLUE").get().addOnSuccessListener {
-                                    for (document in it) {
-                                        teamBlue.add(document.getString("name")!!)
-                                    }
-
-                                    Log.d("チーム赤", "$teamRed")
-                                    Log.d("チーム青", "$teamBlue")
-
-                                    text_red_mem_num.setText("赤チームの人数は${teamRed.size}人です")
-                                    text_blue_mem_num.setText("青チームの人数は${teamBlue.size}人です")
-
-                                    setSpinner(teamRed, teamBlue)
-                                    individualsInfo(teamRed, teamBlue)
-                }
-
+                pickBlueteam(teamRed)
                 //Creatorがチームを作っている間にロード中ができたらいい（チーム編成が終わったらメンバーの画面が表示される）
 
-                            }
-                    }
             }
+    }
+
+    private fun pickBlueteam(teamRed: MutableList<String>) {
+        listeningGetBlueTeam = database.collection(dbCollection).document(keyword).collection("members")
+            .whereEqualTo("team", "BLUE").addSnapshotListener { it, e ->
+
+                if (e != null) return@addSnapshotListener
+                if(it == null || it.isEmpty) return@addSnapshotListener
+
+                val teamBlue: MutableList<String> = mutableListOf()
+                for (document in it) {
+                    teamBlue.add(document.getString("name")!!)
+                }
+
+
+                Log.d("チーム赤", "$teamRed")
+                Log.d("チーム青", "$teamBlue")
+
+                text_red_mem_num.setText("赤チームの人数は${teamRed.size}人です")
+                text_blue_mem_num.setText("青チームの人数は${teamBlue.size}人です")
+
+                setSpinner(teamRed, teamBlue)
+                individualsInfo(teamRed, teamBlue)
+            }
+
     }
 
     private fun individualsInfo(
@@ -210,24 +237,27 @@ class GameSettingFragment : Fragment() {
     }
 
     private fun showHost(myTeam: String) {
-        var host: String? = ""
 
-        database.collection(dbCollection).document(keyword).collection("members")
-            .whereEqualTo("host", true).get().addOnSuccessListener {
+        listeningHost = database.collection(dbCollection).document(keyword).collection("members")
+            .whereEqualTo("host", true).addSnapshotListener { it, e ->
+
+                if (e != null) return@addSnapshotListener
+                if (it == null) return@addSnapshotListener
+
+                var host: String? = ""
                 if (it.isEmpty) {
                     text_if_leader.setText("話し合いでチームリーダを決めてください")
                     btn_prepared.isEnabled = false
-                }
-                else {
+                } else {
                     btn_prepared.isEnabled = it.size() == 2
 
-                   for(document in it){
-                       if(document.getString("team") == myTeam){
+                    for (document in it) {
+                        if (document.getString("team") == myTeam) {
 
-                           host = document.getString("name")
-                       }
-                   }
-                    isHost = when(host){
+                            host = document.getString("name")
+                        }
+                    }
+                    isHost = when (host) {
                         nickname -> {
                             text_if_leader.setText("あなたはリーダーです")
                             true
@@ -244,6 +274,7 @@ class GameSettingFragment : Fragment() {
                 }
             }
     }
+
 
     private fun splitMembersToTwoTeam(membersList: MutableList<String>) {
 
@@ -324,8 +355,8 @@ class GameSettingFragment : Fragment() {
 
             if(host == nickname) isHost = true
             Log.d("MEMBER", "$isHost")
-            Log.d("nickname", "$nickname")
-            Log.d("HOST", "$host")
+            Log.d("nickname", nickname)
+            Log.d("HOST", host)
 
             val newHost = Member(host, isMyTeam, isHost = true)
 
@@ -342,8 +373,12 @@ class GameSettingFragment : Fragment() {
             val myTeamString = if (isMyTeam == Team.RED) "RED" else "BLUE"
             showHost(myTeamString)
 
-            database.collection(dbCollection).document(keyword).collection("members")
-                .whereEqualTo("host", true).get().addOnSuccessListener {
+            listeningHostInfo = database.collection(dbCollection).document(keyword).collection("members")
+                .whereEqualTo("host", true).addSnapshotListener { it, e ->
+
+                    if (e != null) return@addSnapshotListener
+                    if(it == null || it.isEmpty) return@addSnapshotListener
+
                     val host: MutableList<QueryDocumentSnapshot> = mutableListOf()
                     for (document in it) {
                         host.add(document)
