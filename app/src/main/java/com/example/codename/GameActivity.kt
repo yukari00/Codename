@@ -66,7 +66,6 @@ class GameActivity : AppCompatActivity(), OnFragmentListener{
 
         listening = database.collection(dbCollection).document(keyword).collection("words").document(keyword)
             .addSnapshotListener { it, e ->
-                var wordDataSavedToFirestore = mutableListOf<HashMap<String, String>>()
 
                 if (e != null) return@addSnapshotListener
                 if (it == null || !it.exists()) return@addSnapshotListener
@@ -78,6 +77,11 @@ class GameActivity : AppCompatActivity(), OnFragmentListener{
                 for(i in 0 .. 24){
                     list.add(WordsData(hashmap[i]["word"], hashmap[i]["color"]))
                 }
+
+                remaining_red.setText("赤カードの残り枚数:")
+                remaining_blue.setText("青カードの残り枚数:")
+                red_number_of_remaining.setText("8")
+                blue_number_of_remaining.setText("7")
 
                 val onceClicked = mutableListOf<Int>()
                 val redCardIndex = mutableListOf<Int>()
@@ -145,6 +149,9 @@ class GameActivity : AppCompatActivity(), OnFragmentListener{
                                 Log.d("onceClicked", "$onceClicked")
                                 Log.d("redCardIndex", "$redCardIndex")
                                 Log.d("blueCardIndex", "$blueCardIndex")
+
+                                red_number_of_remaining.setText("${8 - redCardIndex.size}")
+                                blue_number_of_remaining.setText("${7 - blueCardIndex.size}")
 
                                     }
                             setNegativeButton("キャンセル"){ dialog, which ->  }
