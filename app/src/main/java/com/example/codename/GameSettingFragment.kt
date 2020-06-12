@@ -141,6 +141,10 @@ class GameSettingFragment : Fragment() {
         listener = null
         adapter.clear()
         listeningUpdate.remove()
+        listeningGetTwoTeam.remove()
+        listeningGetBlueTeam.remove()
+        listeningHost.remove()
+        listeningHostInfo.remove()
     }
 
     private fun update() {
