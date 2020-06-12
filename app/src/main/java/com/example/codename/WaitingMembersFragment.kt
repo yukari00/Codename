@@ -9,6 +9,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.ListenerRegistration
 import kotlinx.android.synthetic.main.fragment_waiting_members.*
 
 
@@ -19,6 +20,8 @@ class WaitingMembersFragment : Fragment() {
 
     var listener: OnFragmentListener? = null
     val database = FirebaseFirestore.getInstance()
+
+    lateinit var listening: ListenerRegistration
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -53,38 +56,45 @@ class WaitingMembersFragment : Fragment() {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
 
-        val memberList: MutableList<String> = mutableListOf()
-        database.collection(dbCollection).document(keyword).collection("members").get()
-            .addOnSuccessListener {
+        listening = database.collection(dbCollection).document(keyword).collection("members").addSnapshotListener { it, e ->
+            val memberList: MutableList<String> = mutableListOf()
 
-                for (document in it) {
-                    if(document.getString("member").isNullOrEmpty()){
-                        memberList.add(document.getString("name")!!)
-                    }else{
-                        memberList.add(document.getString("member")!!)
-                    }
+            if (e != null) return@addSnapshotListener
+
+            if(it == null || it.isEmpty) return@addSnapshotListener
+            for (document in it) {
+                if(document.getString("member").isNullOrEmpty()){
+                    memberList.add(document.getString("name")!!)
+                }else{
+                    memberList.add(document.getString("member")!!)
                 }
-                Log.d("memberList", "$memberList")
-                text_member_join.setText(memberList.joinToString())
-                text_member_join_num.setText("現在参加人数は${memberList.size}人です")
+            }
+            Log.d("memberList", "$memberList")
+            text_member_join.setText(memberList.joinToString())
+            text_member_join_num.setText("現在参加人数は${memberList.size}人です")
 
-                btn_game_start.isEnabled = memberList.size >= 4
+            btn_game_start.isEnabled = memberList.size >= 4
+
+            btn_game_start.setOnClickListener {
+                soundPool?.play2(soundIdButtonClicked)
+                listener?.OnMembersGathered()
+                getFragmentManager()?.beginTransaction()?.remove(this)?.commit();
             }
 
-        btn_game_start.setOnClickListener {
-            soundPool?.play2(soundIdButtonClicked)
-            listener?.OnMembersGathered()
-            getFragmentManager()?.beginTransaction()?.remove(this)?.commit();
-        }
+            btn_go_back.setOnClickListener {
+                soundPool?.play2(soundIdButtonClicked)
+                when(status){
+                    Status.CREATE_ROOM -> deleteRoom(memberList)
+                    Status.JOIN_ROOM -> deleteMemberInfo()
+                }
 
-        btn_go_back.setOnClickListener {
-            soundPool?.play2(soundIdButtonClicked)
-            when(status){
-                Status.CREATE_ROOM -> deleteRoom(memberList)
-                Status.JOIN_ROOM -> deleteMemberInfo()
             }
-
         }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        listening.remove()
     }
 
     private fun deleteMemberInfo() {
