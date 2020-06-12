@@ -80,6 +80,9 @@ class GameActivity : AppCompatActivity(), OnFragmentListener{
                 }
 
                 val onceClicked = mutableListOf<Int>()
+                val redCardIndex = mutableListOf<Int>()
+                val blueCardIndex = mutableListOf<Int>()
+
                 val adapter = CardAdapter(list, object : CardAdapter.OnCardAdapterListener {
                     override fun OnClickCard(word: String, wordsData: WordsData, holder: CardAdapter.ViewHolder) {
 
@@ -113,24 +116,35 @@ class GameActivity : AppCompatActivity(), OnFragmentListener{
                                 }
 
                                         when (hashmap[index]["color"]) {
-                                            "RED" -> if (isMyTeam == Team.RED) soundPool?.play2(soundIdCorrect)
-                                            "BLUE" -> if (isMyTeam == Team.BLUE) soundPool?.play2(soundIdCorrect)
+                                            "RED" -> {
+                                                if (isMyTeam == Team.RED) soundPool?.play2(soundIdCorrect)
+                                                redCardIndex.add(index)
+                                            }
+                                            "BLUE" -> {
+                                                if (isMyTeam == Team.BLUE) soundPool?.play2(soundIdCorrect)
+                                                blueCardIndex.add(index)
+                                            }
                                             "GRAY" -> {
                                                 soundPool?.play2(soundIdIncorrect)
                                                 Toast.makeText(this@GameActivity, "ゲームオーバーです", Toast.LENGTH_LONG).show()
                                             }
                                         }
 
-                                        if (hashmap.count { it["color"].equals("RED") } == 1 && hashmap[index]["color"] == "RED") Toast.makeText(
+                                        if (redCardIndex.size == 8) Toast.makeText(
                                             this@GameActivity,
                                             "赤チームの勝利です",
                                             Toast.LENGTH_LONG
                                         ).show()
-                                        if (hashmap.count { it["color"].equals("BLUE") } == 1 && hashmap[index]["color"] == "BLUE") Toast.makeText(
+                                        if (blueCardIndex.size == 7) Toast.makeText(
                                             this@GameActivity,
                                             "青チームの勝利です",
                                             Toast.LENGTH_LONG
                                         ).show()
+
+                                onceClicked.add(index)
+                                Log.d("onceClicked", "$onceClicked")
+                                Log.d("redCardIndex", "$redCardIndex")
+                                Log.d("blueCardIndex", "$blueCardIndex")
 
                                     }
                             setNegativeButton("キャンセル"){ dialog, which ->  }
