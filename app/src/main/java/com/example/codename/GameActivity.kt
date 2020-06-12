@@ -13,6 +13,7 @@ import androidx.fragment.app.FragmentActivity
 import androidx.recyclerview.widget.GridLayoutManager
 import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.ListenerRegistration
 import com.opencsv.CSVParserBuilder
 import com.opencsv.CSVReader
 import com.opencsv.CSVReaderBuilder
@@ -28,7 +29,7 @@ import kotlin.random.Random
 class GameActivity : AppCompatActivity(), OnFragmentListener{
 
     val database = FirebaseFirestore.getInstance()
-    lateinit var list: MutableList<WordsData>
+    private lateinit var listening: ListenerRegistration
 
     var keyword: String = ""
     var nickname: String = ""
@@ -61,109 +62,102 @@ class GameActivity : AppCompatActivity(), OnFragmentListener{
 
     }
 
-    private fun setCardWords(keyword: String) {
+    private fun setCardWords() {
 
-        list = mutableListOf()
-        val docRef: DocumentReference =
-            database.collection(dbCollection).document(keyword).collection("words")
-                .document(keyword)
-        docRef.get().addOnSuccessListener {
+        listening = database.collection(dbCollection).document(keyword).collection("words").document(keyword)
+            .addSnapshotListener { it, e ->
+                var wordDataSavedToFirestore = mutableListOf<HashMap<String, String>>()
 
-            val hashmap = it["words"] as List<HashMap<String, String>>
+                if (e != null) return@addSnapshotListener
+                if (it == null || !it.exists()) return@addSnapshotListener
 
-            for(i in 0 .. 24){
-               list.add(WordsData(hashmap[i]["word"], hashmap[i]["color"]))
-           }
 
-            showWords(list)
-        }
-    }
-
-    private fun showWords(list: List<WordsData>) {
-
-        val clicedOnce = mutableListOf<Int>()
-        var wordDataSavedToFirestore: MutableList<HashMap<String, String>> = mutableListOf()
-
-        val adapter = CardAdapter(list, object : CardAdapter.OnCardAdapterListener {
-            override fun OnClickCard(word: String, wordsData: WordsData, holder: CardAdapter.ViewHolder) {
-
-                AlertDialog.Builder(this@GameActivity).apply {
-                    setTitle("選択")
-                    setMessage("${word}を選択しますか？")
-                    setPositiveButton("選択"){ dialog, which ->
-
-                        selectedCard(clicedOnce, wordDataSavedToFirestore, word, wordsData, holder)
-                    }
-                    setNegativeButton("キャンセル"){ dialog, which ->  }
-                    show()
-                }
-
-            }
-        })
-
-        database.collection(dbCollection).document(keyword).collection("words").document(keyword)
-            .get().addOnSuccessListener{
+                val list = mutableListOf<WordsData>()
                 val hashmap = it["words"] as MutableList<HashMap<String, String>>
 
-                wordDataSavedToFirestore = hashmap
-            }
-
-       recycler_view.layoutManager = GridLayoutManager(this, 5)
-       recycler_view.adapter = adapter
-
-        supportFragmentManager.beginTransaction()
-            .replace(R.id.container_game_detail, GameWaitingFragment()).commit()
-    }
-
-    private fun selectedCard(clicedOnce: MutableList<Int>, wordDataSavedToFirestore: MutableList<HashMap<String, String>>, word: String, wordsData: WordsData, holder: CardAdapter.ViewHolder) {
-
-        when(wordsData.color){
-            "RED" -> {
-                holder.itemView.card_view.setBackgroundResource(R.color.RED)
-                holder.color.setBackgroundResource(R.color.RED)
-            }
-            "BLUE" -> {
-                holder.itemView.card_view.setBackgroundResource(R.color.BLUE)
-                holder.color.setBackgroundResource(R.color.BLUE)
-            }
-            "GRAY" -> {
-                holder.itemView.card_view.setBackgroundResource(R.color.GRAY)
-                holder.color.setBackgroundResource(R.color.GRAY)
-            }
-            else -> {
-                holder.itemView.card_view.setBackgroundResource(R.color.LIGHT_GRAY)
-                holder.color.setBackgroundResource(R.color.LIGHT_GRAY)
-            }
-        }
-        database.collection(dbCollection).document(keyword).collection("words")
-            .document(keyword)
-            .get().addOnSuccessListener {
-                val hashmap = it["words"] as List<HashMap<String, String>>
-                val index = hashmap.indexOfFirst { it.containsValue(word) }
-
-                if (!clicedOnce.contains(index)) {
-
-                    when(hashmap[index]["color"]){
-                        "RED" -> if(isMyTeam == Team.RED) soundPool?.play2(soundIdCorrect)
-                        "BLUE" -> if(isMyTeam == Team.BLUE) soundPool?.play2(soundIdCorrect)
-                        "GRAY" -> {
-                            soundPool?.play2(soundIdIncorrect)
-                            Toast.makeText(this@GameActivity, "ゲームオーバーです", Toast.LENGTH_LONG).show()
-                        }
-                    }
-
-                    if (hashmap.count { it["color"].equals("RED") } == 1 && hashmap[index]["color"] == "RED") Toast.makeText(this@GameActivity, "赤チームの勝利です", Toast.LENGTH_LONG).show()
-                    if (hashmap.count { it["color"].equals("BLUE") } == 1 && hashmap[index]["color"] == "BLUE") Toast.makeText(this@GameActivity, "青チームの勝利です", Toast.LENGTH_LONG).show()
-
-                    wordDataSavedToFirestore.set(index, hashMapOf("color" to "OVER", "word" to word))
-                    val saveList = hashMapOf("words" to wordDataSavedToFirestore)
-                    database.collection(dbCollection).document(keyword).collection("words")
-                        .document(keyword).set(saveList)
+                for(i in 0 .. 24){
+                    list.add(WordsData(hashmap[i]["word"], hashmap[i]["color"]))
                 }
 
-                clicedOnce.add(index)
+                val onceClicked = mutableListOf<Int>()
+                val adapter = CardAdapter(list, object : CardAdapter.OnCardAdapterListener {
+                    override fun OnClickCard(word: String, wordsData: WordsData, holder: CardAdapter.ViewHolder) {
 
+                        AlertDialog.Builder(this@GameActivity).apply {
+                            setTitle("選択")
+                            setMessage("${word}を選択しますか？")
+                            setPositiveButton("選択"){ dialog, which ->
+
+                                val hashmap = it["words"] as List<HashMap<String, String>>
+                                val index = hashmap.indexOfFirst { it.containsValue(word) }
+
+                                if (onceClicked.contains(index)) return@setPositiveButton
+
+                                when(wordsData.color){
+                                    "RED" -> {
+                                        holder.itemView.card_view.setBackgroundResource(R.color.RED)
+                                        holder.color.setBackgroundResource(R.color.RED)
+                                    }
+                                    "BLUE" -> {
+                                        holder.itemView.card_view.setBackgroundResource(R.color.BLUE)
+                                        holder.color.setBackgroundResource(R.color.BLUE)
+                                    }
+                                    "GRAY" -> {
+                                        holder.itemView.card_view.setBackgroundResource(R.color.GRAY)
+                                        holder.color.setBackgroundResource(R.color.GRAY)
+                                    }
+                                    else -> {
+                                        holder.itemView.card_view.setBackgroundResource(R.color.LIGHT_GRAY)
+                                        holder.color.setBackgroundResource(R.color.LIGHT_GRAY)
+                                    }
+                                }
+
+                                        when (hashmap[index]["color"]) {
+                                            "RED" -> if (isMyTeam == Team.RED) soundPool?.play2(soundIdCorrect)
+                                            "BLUE" -> if (isMyTeam == Team.BLUE) soundPool?.play2(soundIdCorrect)
+                                            "GRAY" -> {
+                                                soundPool?.play2(soundIdIncorrect)
+                                                Toast.makeText(this@GameActivity, "ゲームオーバーです", Toast.LENGTH_LONG).show()
+                                            }
+                                        }
+
+                                        if (hashmap.count { it["color"].equals("RED") } == 1 && hashmap[index]["color"] == "RED") Toast.makeText(
+                                            this@GameActivity,
+                                            "赤チームの勝利です",
+                                            Toast.LENGTH_LONG
+                                        ).show()
+                                        if (hashmap.count { it["color"].equals("BLUE") } == 1 && hashmap[index]["color"] == "BLUE") Toast.makeText(
+                                            this@GameActivity,
+                                            "青チームの勝利です",
+                                            Toast.LENGTH_LONG
+                                        ).show()
+
+                                    }
+                            setNegativeButton("キャンセル"){ dialog, which ->  }
+                            show()
+                        }
+
+                    }
+                })
+                recycler_view.layoutManager = GridLayoutManager(this, 5)
+                recycler_view.adapter = adapter
+
+                supportFragmentManager.beginTransaction()
+                    .replace(R.id.container_game_detail, GameWaitingFragment()).commit()
             }
+
+
+    }
+
+    override fun onPause() {
+        super.onPause()
+
+        listening.remove()
+    }
+
+    private fun selectedCard(wordDataSavedToFirestore: MutableList<HashMap<String, String>>, word: String, wordsData: WordsData, holder: CardAdapter.ViewHolder) {
+
+
     }
 
 
@@ -189,7 +183,7 @@ class GameActivity : AppCompatActivity(), OnFragmentListener{
 
     //GameSettingFragment.OnFragmentGameSettingListener
     override fun GameStart() {
-        setCardWords(keyword)
+        setCardWords()
         btn_explain.visibility = View.VISIBLE
     }
 
