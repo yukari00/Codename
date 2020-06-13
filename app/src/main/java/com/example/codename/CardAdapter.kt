@@ -43,7 +43,11 @@ class CardAdapter(val wordList: List<WordsData>, val listener: OnCardAdapterList
             val selectedCard= wordList[position]
 
             val word = holder.word.text as String
-            listener.OnClickCard(word, selectedCard, holder)
+
+            if(!isHost){
+                listener.OnClickCard(word, selectedCard, holder)
+            }
+
         }
 
 

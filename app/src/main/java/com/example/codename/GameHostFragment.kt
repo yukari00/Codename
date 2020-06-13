@@ -53,9 +53,11 @@ class GameHostFragment : Fragment() {
 
         btn_confirm.setOnClickListener {
             val hint: String = input_edit_text_hint.text.toString()
-            if(checkIfFilled(hint))
-            listener?.OnHost(hint, numOfCardToPick)
-            getFragmentManager()?.beginTransaction()?.remove(this)?.commit();
+            if(checkIfFilled(hint)){
+                listener?.OnHost(hint, numOfCardToPick)
+                getFragmentManager()?.beginTransaction()?.remove(this)?.commit();
+            }
+
         }
 
     }
