@@ -34,6 +34,8 @@ class GameActivity : AppCompatActivity(), OnFragmentListener{
     var keyword: String = ""
     var nickname: String = ""
 
+    lateinit var turn: Turn
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_game)
@@ -86,6 +88,11 @@ class GameActivity : AppCompatActivity(), OnFragmentListener{
                 val onceClicked = mutableListOf<Int>()
                 val redCardIndex = mutableListOf<Int>()
                 val blueCardIndex = mutableListOf<Int>()
+
+                var turnCount = 0
+                turn = Turn.RED_TEAM_TURN
+                text_which_team_turn.setText("赤チームのターンです")
+                newTurn()
 
                 val adapter = CardAdapter(list, object : CardAdapter.OnCardAdapterListener {
                     override fun OnClickCard(word: String, wordsData: WordsData, holder: CardAdapter.ViewHolder) {
@@ -146,12 +153,26 @@ class GameActivity : AppCompatActivity(), OnFragmentListener{
                                         ).show()
 
                                 onceClicked.add(index)
+                                turnCount++
                                 Log.d("onceClicked", "$onceClicked")
                                 Log.d("redCardIndex", "$redCardIndex")
                                 Log.d("blueCardIndex", "$blueCardIndex")
 
                                 red_number_of_remaining.setText("${8 - redCardIndex.size}")
                                 blue_number_of_remaining.setText("${7 - blueCardIndex.size}")
+
+                                when(turnCount % 2){
+                                    0 -> {
+                                        turn = Turn.RED_TEAM_TURN
+                                        text_which_team_turn.setText("赤チームのターンです")
+                                    }
+                                    1 -> {
+                                        turn = Turn.BLUE_TEAM_TURN
+                                        text_which_team_turn.setText("青チームのターンです")
+                                    }
+                                }
+
+                                newTurn()
 
                                     }
                             setNegativeButton("キャンセル"){ dialog, which ->  }
@@ -163,11 +184,64 @@ class GameActivity : AppCompatActivity(), OnFragmentListener{
                 recycler_view.layoutManager = GridLayoutManager(this, 5)
                 recycler_view.adapter = adapter
 
-                supportFragmentManager.beginTransaction()
-                    .replace(R.id.container_game_detail, GameWaitingFragment()).commit()
             }
 
 
+    }
+
+    private fun newTurn() {
+
+        when(turn){
+            Turn.RED_TEAM_TURN -> redTurn()
+            Turn.BLUE_TEAM_TURN -> blueTurn()
+        }
+
+    }
+
+    private fun blueTurn() {
+        if(isMyTeam == Team.BLUE && isHost) host()
+        else if(isMyTeam == Team.BLUE) player()
+        else waitUntilYourTurn()
+    }
+
+    private fun redTurn() {
+        if(isMyTeam == Team.RED && isHost) host() else if (isMyTeam == Team.RED) player() else waitUntilYourTurn()
+        Log.d("isMyTeam", "$isMyTeam")
+        Log.d("isHost", "$isHost")
+
+
+    }
+
+    private fun waitUntilYourTurn() {
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.container_game_detail, GameWaitingFragment()).commit()
+    }
+
+    private fun player() {
+        val myTeam = if(isMyTeam == Team.RED) "RED" else "BLUE"
+        database.collection(dbCollection).document(keyword).collection("words").document(myTeam).addSnapshotListener { it, e ->
+
+            if(e != null) return@addSnapshotListener
+
+            if (it == null || !it.exists()) {
+                supportFragmentManager.beginTransaction()
+                    .replace(R.id.container_game_detail, GameWaitingFragment())
+                    .commit()
+            }
+
+            val hint = it?.getString("hint") ?: return@addSnapshotListener
+            val numCardPick = it.getLong("number of Cards to pick")?.toInt() ?: return@addSnapshotListener
+            Log.d("hint", hint)
+            Log.d("number of Cards to pick", "$numCardPick")
+            supportFragmentManager.beginTransaction()
+                .replace(R.id.container_game_detail, GamePlayerFragment.newInstance(hint, numCardPick)).commit()
+        }
+
+    }
+
+    private fun host() {
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.container_game_detail, GameHostFragment()).commit()
     }
 
     override fun onPause() {
@@ -175,12 +249,6 @@ class GameActivity : AppCompatActivity(), OnFragmentListener{
 
         listening.remove()
     }
-
-    private fun selectedCard(wordDataSavedToFirestore: MutableList<HashMap<String, String>>, word: String, wordsData: WordsData, holder: CardAdapter.ViewHolder) {
-
-
-    }
-
 
     companion object {
 
@@ -194,7 +262,6 @@ class GameActivity : AppCompatActivity(), OnFragmentListener{
             }
     }
 
-    //WaitingMembersFragment.OnFragmentWaitingListener
     override fun OnMembersGathered() {
         //Todo チーム編成（ランダム）
         supportFragmentManager.beginTransaction()
@@ -202,7 +269,6 @@ class GameActivity : AppCompatActivity(), OnFragmentListener{
             .commit()
     }
 
-    //GameSettingFragment.OnFragmentGameSettingListener
     override fun GameStart() {
         setCardWords()
         btn_explain.visibility = View.VISIBLE
@@ -213,7 +279,6 @@ class GameActivity : AppCompatActivity(), OnFragmentListener{
         finish()
     }
 
-    //GameSettingFragment.OnFragmentGameSettingListener
     override fun OnRoomDeleted(membersList: MutableList<String>) {
         membersList.forEach {
             database.collection(dbCollection).document(keyword).collection("members").document(it).delete()
@@ -221,6 +286,16 @@ class GameActivity : AppCompatActivity(), OnFragmentListener{
         database.collection(dbCollection).document(keyword).collection("words").document(keyword).delete()
         database.collection(dbCollection).document(keyword).delete()
         finish()
+    }
+
+    override fun OnHost(hint: String, numCardPick: Int) {
+        val myTeam = if(isMyTeam == Team.RED) "RED" else "BLUE"
+        val hashmap = hashMapOf("hint" to hint, "number of Cards to pick" to numCardPick)
+        database.collection(dbCollection).document(keyword).collection("words").document(myTeam).set(hashmap)
+
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.container_game_detail, GameWaitingFragment())
+            .commit()
     }
 
     private fun importWordsFromCSV() {

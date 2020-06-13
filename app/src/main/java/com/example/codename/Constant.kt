@@ -26,3 +26,8 @@ var soundPool: SoundPool? = null
 var soundIdCorrect = 0
 var soundIdIncorrect = 0
 var soundIdButtonClicked = 0
+
+enum class Turn{
+    RED_TEAM_TURN,
+    BLUE_TEAM_TURN,
+}

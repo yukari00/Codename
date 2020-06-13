@@ -81,7 +81,7 @@
             </LinearLayout>
 
             <TextView
-                android:id="@+id/turn"
+                android:id="@+id/text_which_team_turn"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
@@ -99,7 +99,7 @@
                 android:layout_marginStart="8dp"
                 android:layout_marginEnd="8dp"
                 app:layout_constraintBottom_toTopOf="@id/btn_explain"
-                app:layout_constraintTop_toBottomOf="@id/turn"
+                app:layout_constraintTop_toBottomOf="@id/text_which_team_turn"
                 app:layout_constraintVertical_bias="0.562"
                 tools:layout_editor_absoluteX="8dp" />
 

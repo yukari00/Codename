@@ -34,13 +34,15 @@
 
 
         <Button
+            android:id="@+id/btn_decrease"
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight="1"
 
+            android:layout_weight="1"
             android:background="@drawable/ic_baseline_arrow_left_24" />
 
         <TextView
+            android:id="@+id/text_num_pick"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
@@ -49,6 +51,7 @@
             android:textSize="18sp" />
 
         <Button
+            android:id="@+id/btn_increase"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
@@ -58,7 +61,7 @@
 
 
     <Button
-        android:id="@+id/button"
+        android:id="@+id/btn_confirm"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:text="決定"
@@ -67,14 +70,16 @@
         app:layout_constraintStart_toStartOf="parent" />
 
     <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/input_text_hint"
         android:layout_width="729dp"
         android:layout_height="wrap_content"
-        app:layout_constraintBottom_toTopOf="@+id/button"
+        app:layout_constraintBottom_toTopOf="@+id/btn_confirm"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/liner">
 
         <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/input_edit_text_hint"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="ヒントを入力してください！"

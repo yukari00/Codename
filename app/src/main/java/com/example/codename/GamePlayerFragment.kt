@@ -5,27 +5,20 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import kotlinx.android.synthetic.main.fragment_game_player.*
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
 
-/**
- * A simple [Fragment] subclass.
- * Use the [GamePlayerFragment.newInstance] factory method to
- * create an instance of this fragment.
- */
 class GamePlayerFragment : Fragment() {
-    // TODO: Rename and change types of parameters
-    private var param1: String? = null
-    private var param2: String? = null
+
+    private var hint: String? = ""
+    private var numCardPick: Int? = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
-            param2 = it.getString(ARG_PARAM2)
+            hint = it.getString(INTENT_KEY_HINT) ?: return
+            numCardPick = it.getInt(INTENT_KEY_NUMBER_CARD) ?: return
+
         }
     }
 
@@ -37,22 +30,25 @@ class GamePlayerFragment : Fragment() {
         return inflater.inflate(R.layout.fragment_game_player, container, false)
     }
 
+    override fun onActivityCreated(savedInstanceState: Bundle?) {
+        super.onActivityCreated(savedInstanceState)
+
+        hint_word.setText(hint)
+        number_of_cards_to_choose.setText("$numCardPick")
+
+    }
+
     companion object {
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
-         * @return A new instance of fragment GamePlayerFragment.
-         */
-        // TODO: Rename and change types and number of parameters
+
+        private const val INTENT_KEY_HINT = "INTENT_KEY_HINT"
+        private const val INTENT_KEY_NUMBER_CARD = "INTENT_KEY_NUMBER_CARD"
         @JvmStatic
-        fun newInstance(param1: String, param2: String) =
+        fun newInstance(hint: String, numCardPick: Int) =
             GamePlayerFragment().apply {
                 arguments = Bundle().apply {
-                    putString(ARG_PARAM1, param1)
-                    putString(ARG_PARAM2, param2)
+                    putString(INTENT_KEY_HINT, hint)
+                    putInt(INTENT_KEY_NUMBER_CARD, numCardPick)
+
                 }
             }
     }

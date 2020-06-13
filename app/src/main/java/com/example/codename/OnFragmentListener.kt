@@ -10,4 +10,7 @@ interface OnFragmentListener {
     //both
     fun OnRoomDeleted(membersList: MutableList<String>)
     fun OnMemberDeleted()
+
+    //GameHostFragment
+    fun OnHost(hint: String, numCardPick: Int)
 }
