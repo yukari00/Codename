@@ -189,117 +189,132 @@ class GameActivity : AppCompatActivity(), OnFragmentListener{
     private fun resultOfVote(voteItemList: MutableList<String>, redCardIndex: MutableList<Int>,
                              blueCardIndex: MutableList<Int>, hashmap: List<HashMap<String, String>>, clickedDataList: MutableList<ClickedData>) {
 
-        val countWords = voteItemList.groupingBy { it }.eachCount()
-        Log.d("countWords", "$countWords")
+        val myTeam = if(isMyTeam == Team.RED) "RED" else "BLUE"
+        database.collection(dbCollection).document(keyword).collection("words").document(myTeam).get().addOnSuccessListener {
+            val numCardPick = it.getLong("number of Cards to pick")?.toInt() ?: return@addOnSuccessListener
 
-        val collection = countWords.values
-        Log.d("collection", "$collection")
-        val numMax = collection.max() ?: 1
-        val chosenWordMap = countWords.filterValues {
-            it == numMax
+            val countWords = voteItemList.groupingBy { it }.eachCount()
+            Log.d("countWords", "$countWords")
+
+            val collectionNum = countWords.values
+            Log.d("collection", "$collectionNum")
+            val collectionAscending = collectionNum.sorted().distinct()
+            val collectionDescending = collectionAscending.reversed()
+            Log.d("collectionAscending", "$collectionAscending")
+            Log.d("collectionDescending", "$collectionDescending")
+
+            val selectedWordMapList = mutableListOf<Map.Entry<String, Int>>()
+
+            for (element in collectionDescending){
+                val chosenWordMap = countWords.filterValues {
+                    it == element
+                }
+
+                for( it in chosenWordMap){
+                    selectedWordMapList.add(it)
+                }
+            }
+
+            Log.d("selectedWordMapList", "$selectedWordMapList")
+
+            val selectedWordList = mutableListOf<String>()
+            for( i in 0 until numCardPick){
+                val chosenWord = selectedWordMapList[i].key
+                selectedWordList.add(chosenWord)
+            }
+            Log.d("selectedWordList", "$selectedWordList")
+
+            if (selectedWordList.size == numCardPick){
+
+                for (i in 0 until numCardPick){
+                    val word = selectedWordList[i]
+                    val index = hashmap.indexOfFirst {
+                        it.containsValue(word)
+                    }
+
+                    val data = clickedDataList.filter {
+                        it.wordsData.word == word
+                    }
+
+                    val wordsData = data.toList()[0].wordsData
+                    val holder = data.toList()[0].holder
+
+                    Log.d("word", "$word")
+                    Log.d("index", "$index")
+                    Log.d("hashmap[index]", "${hashmap[index]}")
+                    Log.d("wordsData", "$wordsData")
+                    Log.d("holder", "$holder")
+                    Log.d("data", "$data")
+
+                    when (wordsData.color) {
+                        "RED" -> {
+                            holder.itemView.card_view.setBackgroundResource(R.color.RED)
+                            holder.color.setBackgroundResource(R.color.RED)
+                        }
+                        "BLUE" -> {
+                            holder.itemView.card_view.setBackgroundResource(R.color.BLUE)
+                            holder.color.setBackgroundResource(R.color.BLUE)
+                        }
+                        "GRAY" -> {
+                            holder.itemView.card_view.setBackgroundResource(R.color.GRAY)
+                            holder.color.setBackgroundResource(R.color.GRAY)
+                        }
+                        else -> {
+                            holder.itemView.card_view.setBackgroundResource(R.color.LIGHT_GRAY)
+                            holder.color.setBackgroundResource(R.color.LIGHT_GRAY)
+                        }
+                    }
+
+                    when (hashmap[index]["color"]) {
+                        "RED" -> redCardIndex.add(index)
+                        "BLUE" -> blueCardIndex.add(index)
+                        "GRAY" -> {
+                            soundPool?.play2(soundIdIncorrect)
+                            Toast.makeText(
+                                this@GameActivity,
+                                "ゲームオーバーです",
+                                Toast.LENGTH_LONG
+                            ).show()
+                        }
+                    }
+
+                }
+
+
+                if (redCardIndex.size == 8) Toast.makeText(
+                    this@GameActivity,
+                    "赤チームの勝利です",
+                    Toast.LENGTH_LONG
+                ).show()
+                if (blueCardIndex.size == 7) Toast.makeText(
+                    this@GameActivity,
+                    "青チームの勝利です",
+                    Toast.LENGTH_LONG
+                ).show()
+
+                turnCount++
+
+                Log.d("redCardIndex", "$redCardIndex")
+                Log.d("blueCardIndex", "$blueCardIndex")
+
+                red_number_of_remaining.setText("${8 - redCardIndex.size}")
+                blue_number_of_remaining.setText("${7 - blueCardIndex.size}")
+
+                when (turnCount % 2) {
+                    0 -> {
+                        turn = Turn.RED_TEAM_TURN
+                        text_which_team_turn.setText("赤チームのターンです")
+                    }
+                    1 -> {
+                        turn = Turn.BLUE_TEAM_TURN
+                        text_which_team_turn.setText("青チームのターンです")
+                    }
+                }
+
+                newTurn()
+
+            }
         }
-
-       val chosenWord = chosenWordMap.keys
-       if (chosenWord.size == 1){
-
-           val word= chosenWord.toList()[0]
-           val index = hashmap.indexOfFirst {
-               it.containsValue(word)
-           }
-
-           val data = clickedDataList.filter {
-               it.wordsData.word == word
-           }
-
-           val wordsData = data.toList()[0].wordsData
-           val holder = data.toList()[0].holder
-
-
-           Log.d("word", "$word")
-           Log.d("index", "$index")
-           Log.d("hashmap[index]", "${hashmap[index]}")
-           Log.d("wordsData", "$wordsData")
-           Log.d("holder", "$holder")
-           Log.d("data", "$data")
-
-           when (wordsData.color) {
-               "RED" -> {
-                   holder.itemView.card_view.setBackgroundResource(R.color.RED)
-                   holder.color.setBackgroundResource(R.color.RED)
-               }
-               "BLUE" -> {
-                   holder.itemView.card_view.setBackgroundResource(R.color.BLUE)
-                   holder.color.setBackgroundResource(R.color.BLUE)
-               }
-               "GRAY" -> {
-                   holder.itemView.card_view.setBackgroundResource(R.color.GRAY)
-                   holder.color.setBackgroundResource(R.color.GRAY)
-               }
-               else -> {
-                   holder.itemView.card_view.setBackgroundResource(R.color.LIGHT_GRAY)
-                   holder.color.setBackgroundResource(R.color.LIGHT_GRAY)
-               }
-           }
-
-           when (hashmap[index]["color"]) {
-               "RED" -> {
-                   if (isMyTeam == Team.RED) soundPool?.play2(
-                       soundIdCorrect
-                   )
-                   redCardIndex.add(index)
-               }
-               "BLUE" -> {
-                   if (isMyTeam == Team.BLUE) soundPool?.play2(
-                       soundIdCorrect
-                   )
-                   blueCardIndex.add(index)
-               }
-               "GRAY" -> {
-                   soundPool?.play2(soundIdIncorrect)
-                   Toast.makeText(
-                       this@GameActivity,
-                       "ゲームオーバーです",
-                       Toast.LENGTH_LONG
-                   ).show()
-               }
-           }
-
-           if (redCardIndex.size == 8) Toast.makeText(
-               this@GameActivity,
-               "赤チームの勝利です",
-               Toast.LENGTH_LONG
-           ).show()
-           if (blueCardIndex.size == 7) Toast.makeText(
-               this@GameActivity,
-               "青チームの勝利です",
-               Toast.LENGTH_LONG
-           ).show()
-
-           turnCount++
-
-           Log.d("redCardIndex", "$redCardIndex")
-           Log.d("blueCardIndex", "$blueCardIndex")
-
-           red_number_of_remaining.setText("${8 - redCardIndex.size}")
-           blue_number_of_remaining.setText("${7 - blueCardIndex.size}")
-
-           when (turnCount % 2) {
-               0 -> {
-                   turn = Turn.RED_TEAM_TURN
-                   text_which_team_turn.setText("赤チームのターンです")
-               }
-               1 -> {
-                   turn = Turn.BLUE_TEAM_TURN
-                   text_which_team_turn.setText("青チームのターンです")
-               }
-           }
-
-           newTurn()
-
-       }
-
-
-       Log.d("chosenWord", "$chosenWord")
 
 
     }
