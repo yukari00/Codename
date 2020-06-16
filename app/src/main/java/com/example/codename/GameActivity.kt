@@ -226,8 +226,8 @@ class GameActivity : AppCompatActivity(), OnFragmentListener{
 
             if (selectedWordList.size == numCardPick){
 
-                for (i in 0 until numCardPick){
-                    val word = selectedWordList[i]
+                val clickedData = mutableListOf<WordsData>()
+                for (word in selectedWordList){
                     val index = hashmap.indexOfFirst {
                         it.containsValue(word)
                     }
@@ -239,6 +239,7 @@ class GameActivity : AppCompatActivity(), OnFragmentListener{
                     val wordsData = data.toList()[0].wordsData
                     val holder = data.toList()[0].holder
 
+                    clickedData.add(wordsData)
                     Log.d("word", "$word")
                     Log.d("index", "$index")
                     Log.d("hashmap[index]", "${hashmap[index]}")
@@ -280,7 +281,7 @@ class GameActivity : AppCompatActivity(), OnFragmentListener{
 
                 }
 
-
+                Log.d("clickedData", "$clickedData")
                 if (redCardIndex.size == 8) Toast.makeText(
                     this@GameActivity,
                     "赤チームの勝利です",
@@ -312,6 +313,9 @@ class GameActivity : AppCompatActivity(), OnFragmentListener{
                 }
 
                 newTurn()
+                val selectedCardsInfo = SelectedCardsInfo(clickedData, turnCount)
+              
+                database.collection(dbCollection).document(keyword).collection("selectedCards").add(selectedCardsInfo)
 
             }
         }

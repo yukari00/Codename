@@ -11,3 +11,5 @@ data class Member(
 )
 
 data class ClickedData(val wordsData: WordsData, val holder: CardAdapter.ViewHolder)
+
+data class SelectedCardsInfo(val clickedWords: List<WordsData>, val turnCount: Int)
