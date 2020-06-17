@@ -1,15 +1,13 @@
 package com.example.codename
 
-import android.util.Log
+
 import android.view.LayoutInflater
-import android.view.OrientationEventListener
 import android.view.View
 import android.view.ViewGroup
-import androidx.appcompat.view.menu.ActionMenuItemView
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.card_words.view.*
 
-class CardAdapter(val wordList: List<WordsData>, val listener: OnCardAdapterListener): RecyclerView.Adapter<CardAdapter.ViewHolder>() {
+class CardAdapter(private val wordList: List<WordsData>, private val selectedCardList: List<WordsData>, private val listener: OnCardAdapterListener): RecyclerView.Adapter<CardAdapter.ViewHolder>() {
 
     interface OnCardAdapterListener{
         fun OnClickCard(word: String, wordsData: WordsData, holder: ViewHolder)
@@ -17,16 +15,42 @@ class CardAdapter(val wordList: List<WordsData>, val listener: OnCardAdapterList
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        return ViewHolder(LayoutInflater.from(parent.context)
+        return ViewHolder(
+            LayoutInflater.from(parent.context)
             .inflate(R.layout.card_words, parent, false))
     }
 
     override fun getItemCount(): Int { return wordList.size }
 
-
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
 
         holder.word.text = wordList[position].word
+
+        if(selectedCardList.isNotEmpty()){
+            for (i in selectedCardList.indices){
+                if(wordList[position] == selectedCardList[i]){
+                    when(wordList[position].color){
+                        "RED" -> {
+                            holder.itemView.card_view.setBackgroundResource(R.color.RED)
+                            holder.color.setBackgroundResource(R.color.RED)
+                        }
+                        "BLUE" -> {
+                            holder.itemView.card_view.setBackgroundResource(R.color.BLUE)
+                            holder.color.setBackgroundResource(R.color.BLUE)
+                        }
+                        "GRAY" -> {
+                            holder.itemView.card_view.setBackgroundResource(R.color.GRAY)
+                            holder.color.setBackgroundResource(R.color.GRAY)
+                        }
+                        else -> {
+                            holder.itemView.card_view.setBackgroundResource(R.color.LIGHT_GRAY)
+                            holder.color.setBackgroundResource(R.color.LIGHT_GRAY)
+                        }
+                    }
+                }
+            }
+        }
+
 
         if(isHost){
             if(wordList[position].color == "RED"){

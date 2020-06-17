@@ -4,6 +4,7 @@ import android.content.Intent
 import android.content.res.AssetManager
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.provider.UserDictionary
 import android.util.ArrayMap
 import android.util.Log
 import android.view.View
@@ -85,72 +86,127 @@ class GameActivity : AppCompatActivity(), OnFragmentListener{
                     list.add(WordsData(hashmap[i]["word"], hashmap[i]["color"]))
                 }
 
-                remaining_red.setText("赤カードの残り枚数:")
-                remaining_blue.setText("青カードの残り枚数:")
-                red_number_of_remaining.setText("8")
-                blue_number_of_remaining.setText("7")
+                database.collection(dbCollection).document(keyword).collection("selectedCards").addSnapshotListener { query, e ->
 
-                val onceClicked = mutableListOf<Int>()
-                val redCardIndex = mutableListOf<Int>()
-                val blueCardIndex = mutableListOf<Int>()
+                    if(e != null) return@addSnapshotListener
+                    val selectedCardList = mutableListOf<WordsData>()
 
-                turn = Turn.RED_TEAM_TURN
-                text_which_team_turn.setText("赤チームのターンです")
-                newTurn()
+                    if(query == null || query.isEmpty){
 
-                val listItem = mutableListOf<String>()
+                        remaining_red.setText("赤カードの残り枚数:")
+                        remaining_blue.setText("青カードの残り枚数:")
+                        red_number_of_remaining.setText("8")
+                        blue_number_of_remaining.setText("7")
 
-                val clickedDataList = mutableListOf<ClickedData>()
+                        turn = Turn.RED_TEAM_TURN
+                        text_which_team_turn.setText("赤チームのターンです")
 
-                val adapter = CardAdapter(list, object : CardAdapter.OnCardAdapterListener {
-                    override fun OnClickCard(word: String, wordsData: WordsData, holder: CardAdapter.ViewHolder) {
+                    } else{
 
-                        val myTeam = if(isMyTeam == Team.RED) "RED" else "BLUE"
-                        val hashmap = it["words"] as List<HashMap<String, String>>
-                        val index = hashmap.indexOfFirst { it.containsValue(word) }
-                        Log.d("index", "$index")
+                        turnCount = query.documents[query.documents.size - 1].getLong("turnCount")?.toInt() ?: return@addSnapshotListener
+                        Log.d("turnCount", "$turnCount")
 
-                        database.collection(dbCollection).document(keyword).collection("words").document(myTeam).addSnapshotListener { it, e ->
+                        var NumRedCard = 0
+                        var NumBlueCard = 0
 
-                            if (e != null) return@addSnapshotListener
-                            if (it == null || !it.exists()) return@addSnapshotListener
-
-                            val numCardPick = it.getLong("number of Cards to pick")?.toInt()
-                                ?: return@addSnapshotListener
-
-                            if (listItem.size == numCardPick) {
-                                listItem.removeAt(0)
-                                listItem.add(word)
-                            } else {
-                                listItem.add(word)
-                            }
-
-                            chosen_cards.setText("${listItem.joinToString()}")
-
-                            btn_vote.setOnClickListener {
-                                //Todo 投票ボタン処理
-                                val voteData = Member(nickname, isMyTeam, isHost, vote = listItem)
-                                database.collection(dbCollection).document(keyword).collection("members").document(nickname).set(voteData)
-
-                                waitUntilAllVote(redCardIndex, blueCardIndex, hashmap,clickedDataList)
+                        query.documents.forEach {
+                            val wordList = it["clickedWords"] as List<HashMap<String, String>>
+                            for (j in wordList.indices){
+                                val color = wordList[j]["color"]
+                                when(color){
+                                    "RED" -> NumRedCard++
+                                    "BLUE" -> NumBlueCard++
+                                }
                             }
                         }
+
+                        remaining_red.setText("赤カードの残り枚数:")
+                        remaining_blue.setText("青カードの残り枚数:")
+                        red_number_of_remaining.setText("${8 - NumRedCard}")
+                        blue_number_of_remaining.setText("${7 - NumBlueCard}")
+
+                        when (turnCount % 2) {
+                            0 -> {
+                                turn = Turn.RED_TEAM_TURN
+                                text_which_team_turn.setText("赤チームのターンです")
+                            }
+                            1 -> {
+                                turn = Turn.BLUE_TEAM_TURN
+                                text_which_team_turn.setText("青チームのターンです")
+                            }
+                        }
+
+                        for(i in 0 until query.documents.size){
+                            val cardsHash = query.documents[i]["clickedWords"] as MutableList<HashMap<String, String>>? ?: return@addSnapshotListener
+
+                            for (j in 0 until cardsHash.size ){
+                                selectedCardList.add(WordsData(cardsHash[j]["word"], cardsHash[j]["color"]))
+                            }
+                        }
+
+                        Log.d("query.documents.size", "${query.documents.size}")
+                        Log.d("selectedCardList", "$selectedCardList")
                     }
 
-                    override fun OnClickedDataSaved(
-                        wordsData: WordsData,
-                        holder: CardAdapter.ViewHolder
-                    ) {
-                        val clickedData = ClickedData(wordsData, holder)
-                        clickedDataList.add(clickedData)
-                    }
-                })
-                recycler_view.layoutManager = GridLayoutManager(this, 5)
-                recycler_view.adapter = adapter
 
+                    val onceClicked = mutableListOf<Int>()
+                    val redCardIndex = mutableListOf<Int>()
+                    val blueCardIndex = mutableListOf<Int>()
+
+
+                    newTurn()
+
+                    val listItem = mutableListOf<String>()
+
+                    val clickedDataList = mutableListOf<ClickedData>()
+
+                    val adapter = CardAdapter(list, selectedCardList, object : CardAdapter.OnCardAdapterListener {
+                        override fun OnClickCard(word: String, wordsData: WordsData, holder: CardAdapter.ViewHolder) {
+
+                            val myTeam = if(isMyTeam == Team.RED) "RED" else "BLUE"
+                            val hashmap = it["words"] as List<HashMap<String, String>>
+                            val index = hashmap.indexOfFirst { it.containsValue(word) }
+                            Log.d("index", "$index")
+
+                            database.collection(dbCollection).document(keyword).collection("words").document(myTeam).addSnapshotListener { it, e ->
+
+                                if (e != null) return@addSnapshotListener
+                                if (it == null || !it.exists()) return@addSnapshotListener
+
+                                val numCardPick = it.getLong("number of Cards to pick")?.toInt()
+                                    ?: return@addSnapshotListener
+
+                                if (listItem.size == numCardPick) {
+                                    listItem.removeAt(0)
+                                    listItem.add(word)
+                                } else {
+                                    listItem.add(word)
+                                }
+
+                                chosen_cards.setText("${listItem.joinToString()}")
+
+                                btn_vote.setOnClickListener {
+                                    //Todo 投票ボタン処理
+                                    val voteData = Member(nickname, isMyTeam, isHost, vote = listItem)
+                                    database.collection(dbCollection).document(keyword).collection("members").document(nickname).set(voteData)
+
+                                    waitUntilAllVote(redCardIndex, blueCardIndex, hashmap,clickedDataList)
+                                }
+                            }
+                        }
+
+                        override fun OnClickedDataSaved(
+                            wordsData: WordsData,
+                            holder: CardAdapter.ViewHolder
+                        ) {
+                            val clickedData = ClickedData(wordsData, holder)
+                            clickedDataList.add(clickedData)
+                        }
+                    })
+                    recycler_view.layoutManager = GridLayoutManager(this, 5)
+                    recycler_view.adapter = adapter
+                }
             }
-
-
     }
 
     private fun waitUntilAllVote(redCardIndex: MutableList<Int>, blueCardIndex: MutableList<Int>, hashmap: List<HashMap<String, String>>,
@@ -181,9 +237,6 @@ class GameActivity : AppCompatActivity(), OnFragmentListener{
 
                 resultOfVote(voteItemList,redCardIndex, blueCardIndex, hashmap,clickedDataList)
             }
-
-
-
     }
 
     private fun resultOfVote(voteItemList: MutableList<String>, redCardIndex: MutableList<Int>,
@@ -314,7 +367,7 @@ class GameActivity : AppCompatActivity(), OnFragmentListener{
 
                 newTurn()
                 val selectedCardsInfo = SelectedCardsInfo(clickedData, turnCount)
-              
+
                 database.collection(dbCollection).document(keyword).collection("selectedCards").add(selectedCardsInfo)
 
             }
@@ -349,6 +402,8 @@ class GameActivity : AppCompatActivity(), OnFragmentListener{
     private fun waitUntilYourTurn() {
         supportFragmentManager.beginTransaction()
             .replace(R.id.container_game_detail, GameWaitingFragment()).commit()
+
+
     }
 
     private fun player() {
