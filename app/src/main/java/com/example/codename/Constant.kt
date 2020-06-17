@@ -20,6 +20,7 @@ var status: Status = Status.JOIN_ROOM
 
 var isHost = false
 var isMyTeam = Team.RED
+var isWaiter = false
 
 var soundPool: SoundPool? = null
 

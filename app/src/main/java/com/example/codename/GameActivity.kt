@@ -13,6 +13,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.FragmentActivity
 import androidx.recyclerview.widget.GridLayoutManager
 import com.google.firebase.firestore.DocumentReference
+import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
 import com.opencsv.CSVParserBuilder
@@ -103,7 +104,12 @@ class GameActivity : AppCompatActivity(), OnFragmentListener{
 
                     } else{
 
-                        turnCount = query.documents[query.documents.size - 1].getLong("turnCount")?.toInt() ?: return@addSnapshotListener
+                        val turnCountList = mutableListOf<Int>()
+                        for (i in query.documents.indices){
+                           val tCount = query.documents[i].getLong("turnCount")?.toInt() ?: return@addSnapshotListener
+                            turnCountList.add(tCount)
+                        }
+                        turnCount = turnCountList.max()?: return@addSnapshotListener
                         Log.d("turnCount", "$turnCount")
 
                         var NumRedCard = 0
@@ -158,7 +164,7 @@ class GameActivity : AppCompatActivity(), OnFragmentListener{
 
                     val listItem = mutableListOf<String>()
 
-                    val clickedDataList = mutableListOf<ClickedData>()
+                    val clickedDataList = mutableListOf<WordsData>()
 
                     val adapter = CardAdapter(list, selectedCardList, object : CardAdapter.OnCardAdapterListener {
                         override fun OnClickCard(word: String, wordsData: WordsData, holder: CardAdapter.ViewHolder) {
@@ -167,6 +173,11 @@ class GameActivity : AppCompatActivity(), OnFragmentListener{
                             val hashmap = it["words"] as List<HashMap<String, String>>
                             val index = hashmap.indexOfFirst { it.containsValue(word) }
                             Log.d("index", "$index")
+
+                            val wordsDataList = mutableListOf<WordsData>()
+                            for(i in 0 .. 24){
+                                wordsDataList.add(WordsData(hashmap[i]["word"], hashmap[i]["color"]))
+                            }
 
                             database.collection(dbCollection).document(keyword).collection("words").document(myTeam).addSnapshotListener { it, e ->
 
@@ -190,16 +201,16 @@ class GameActivity : AppCompatActivity(), OnFragmentListener{
                                     val voteData = Member(nickname, isMyTeam, isHost, vote = listItem)
                                     database.collection(dbCollection).document(keyword).collection("members").document(nickname).set(voteData)
 
-                                    waitUntilAllVote(redCardIndex, blueCardIndex, hashmap,clickedDataList)
+                                    Log.d("clickedDataList", "$clickedDataList")
+                                    waitUntilAllVote(redCardIndex, blueCardIndex, wordsDataList)
                                 }
                             }
                         }
 
                         override fun OnClickedDataSaved(
-                            wordsData: WordsData,
-                            holder: CardAdapter.ViewHolder
+                            wordsData: WordsData
                         ) {
-                            val clickedData = ClickedData(wordsData, holder)
+                            val clickedData = wordsData
                             clickedDataList.add(clickedData)
                         }
                     })
@@ -209,8 +220,7 @@ class GameActivity : AppCompatActivity(), OnFragmentListener{
             }
     }
 
-    private fun waitUntilAllVote(redCardIndex: MutableList<Int>, blueCardIndex: MutableList<Int>, hashmap: List<HashMap<String, String>>,
-                                 clickedDataList: MutableList<ClickedData>) {
+    private fun waitUntilAllVote(redCardIndex: MutableList<Int>, blueCardIndex: MutableList<Int>, workDataList: MutableList<WordsData>) {
         supportFragmentManager.beginTransaction()
             .replace(R.id.container_game_detail, GameWaitingFragment()).commit()
 
@@ -235,12 +245,12 @@ class GameActivity : AppCompatActivity(), OnFragmentListener{
                 Log.d("players", "$players")
                 Log.d("voteItemList", "$voteItemList")
 
-                resultOfVote(voteItemList,redCardIndex, blueCardIndex, hashmap,clickedDataList)
+                resultOfVote(voteItemList,redCardIndex, blueCardIndex, workDataList)
             }
     }
 
     private fun resultOfVote(voteItemList: MutableList<String>, redCardIndex: MutableList<Int>,
-                             blueCardIndex: MutableList<Int>, hashmap: List<HashMap<String, String>>, clickedDataList: MutableList<ClickedData>) {
+                             blueCardIndex: MutableList<Int>, workDataList: MutableList<WordsData>) {
 
         val myTeam = if(isMyTeam == Team.RED) "RED" else "BLUE"
         database.collection(dbCollection).document(keyword).collection("words").document(myTeam).get().addOnSuccessListener {
@@ -281,45 +291,21 @@ class GameActivity : AppCompatActivity(), OnFragmentListener{
 
                 val clickedData = mutableListOf<WordsData>()
                 for (word in selectedWordList){
-                    val index = hashmap.indexOfFirst {
-                        it.containsValue(word)
+                    val index = workDataList.indexOfFirst {
+                        it.word == word
                     }
 
-                    val data = clickedDataList.filter {
-                        it.wordsData.word == word
+                    val data = workDataList.filter {
+                        it.word == word
                     }
 
-                    val wordsData = data.toList()[0].wordsData
-                    val holder = data.toList()[0].holder
+                    //val wordsData = data.toList()[0].wordsData
+                    if(data.isEmpty()) return@addOnSuccessListener
+                    val wordsData = data[0]
 
                     clickedData.add(wordsData)
-                    Log.d("word", "$word")
-                    Log.d("index", "$index")
-                    Log.d("hashmap[index]", "${hashmap[index]}")
-                    Log.d("wordsData", "$wordsData")
-                    Log.d("holder", "$holder")
-                    Log.d("data", "$data")
 
-                    when (wordsData.color) {
-                        "RED" -> {
-                            holder.itemView.card_view.setBackgroundResource(R.color.RED)
-                            holder.color.setBackgroundResource(R.color.RED)
-                        }
-                        "BLUE" -> {
-                            holder.itemView.card_view.setBackgroundResource(R.color.BLUE)
-                            holder.color.setBackgroundResource(R.color.BLUE)
-                        }
-                        "GRAY" -> {
-                            holder.itemView.card_view.setBackgroundResource(R.color.GRAY)
-                            holder.color.setBackgroundResource(R.color.GRAY)
-                        }
-                        else -> {
-                            holder.itemView.card_view.setBackgroundResource(R.color.LIGHT_GRAY)
-                            holder.color.setBackgroundResource(R.color.LIGHT_GRAY)
-                        }
-                    }
-
-                    when (hashmap[index]["color"]) {
+                    when (workDataList[index].color) {
                         "RED" -> redCardIndex.add(index)
                         "BLUE" -> blueCardIndex.add(index)
                         "GRAY" -> {
@@ -348,32 +334,30 @@ class GameActivity : AppCompatActivity(), OnFragmentListener{
 
                 turnCount++
 
-                Log.d("redCardIndex", "$redCardIndex")
-                Log.d("blueCardIndex", "$blueCardIndex")
-
-                red_number_of_remaining.setText("${8 - redCardIndex.size}")
-                blue_number_of_remaining.setText("${7 - blueCardIndex.size}")
-
-                when (turnCount % 2) {
-                    0 -> {
-                        turn = Turn.RED_TEAM_TURN
-                        text_which_team_turn.setText("赤チームのターンです")
-                    }
-                    1 -> {
-                        turn = Turn.BLUE_TEAM_TURN
-                        text_which_team_turn.setText("青チームのターンです")
-                    }
-                }
-
-                newTurn()
+                Log.d("isWaiter", "$isWaiter")
                 val selectedCardsInfo = SelectedCardsInfo(clickedData, turnCount)
-
+                deleteHostHintInfo()
                 database.collection(dbCollection).document(keyword).collection("selectedCards").add(selectedCardsInfo)
 
             }
         }
 
 
+    }
+
+    private fun deleteHostHintInfo() {
+
+        val updatesHint = hashMapOf<String, Any>(
+            "hint" to FieldValue.delete()
+        )
+
+        val updatesNumber = hashMapOf<String, Any>(
+            "number of Cards to pick" to FieldValue.delete()
+        )
+
+        val myTeam = if(isMyTeam == Team.RED) "RED" else "BLUE"
+        database.collection(dbCollection).document(keyword).collection("words").document(myTeam).update(updatesHint)
+        database.collection(dbCollection).document(keyword).collection("words").document(myTeam).update(updatesNumber)
     }
 
     private fun newTurn() {
@@ -400,6 +384,7 @@ class GameActivity : AppCompatActivity(), OnFragmentListener{
     }
 
     private fun waitUntilYourTurn() {
+        isWaiter = true
         supportFragmentManager.beginTransaction()
             .replace(R.id.container_game_detail, GameWaitingFragment()).commit()
 
@@ -407,6 +392,7 @@ class GameActivity : AppCompatActivity(), OnFragmentListener{
     }
 
     private fun player() {
+        isWaiter = false
         val myTeam = if(isMyTeam == Team.RED) "RED" else "BLUE"
         database.collection(dbCollection).document(keyword).collection("words").document(myTeam).addSnapshotListener { it, e ->
 
@@ -429,8 +415,29 @@ class GameActivity : AppCompatActivity(), OnFragmentListener{
     }
 
     private fun host() {
+        isWaiter = false
         supportFragmentManager.beginTransaction()
             .replace(R.id.container_game_detail, GameHostFragment()).commit()
+
+        deleteAllVoteInfo()
+    }
+
+    private fun deleteAllVoteInfo() {
+        database.collection(dbCollection).document(keyword).collection("members").get().addOnSuccessListener {
+            val membersList = mutableListOf<String>()
+            for (i in it.documents.indices){
+                val name = it.documents[i].getString("name")?:return@addOnSuccessListener
+                membersList.add(name)
+            }
+
+            val updates = hashMapOf<String, Any>(
+                "vote" to FieldValue.delete()
+            )
+            for (member in membersList){
+                database.collection(dbCollection).document(keyword).collection("members").document(member).update(updates)
+            }
+
+        }
     }
 
     override fun onPause() {
@@ -477,7 +484,7 @@ class GameActivity : AppCompatActivity(), OnFragmentListener{
         finish()
     }
 
-    override fun OnHost(hint: String, numCardPick: Int) {
+    override fun OnHostCallBack(hint: String, numCardPick: Int) {
         val myTeam = if(isMyTeam == Team.RED) "RED" else "BLUE"
         val hashmap = hashMapOf("hint" to hint, "number of Cards to pick" to numCardPick)
         database.collection(dbCollection).document(keyword).collection("words").document(myTeam).set(hashmap)

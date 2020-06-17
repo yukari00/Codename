@@ -12,5 +12,5 @@ interface OnFragmentListener {
     fun OnMemberDeleted()
 
     //GameHostFragment
-    fun OnHost(hint: String, numCardPick: Int)
+    fun OnHostCallBack(hint: String, numCardPick: Int)
 }
