@@ -11,7 +11,6 @@ class CardAdapter(private val wordList: List<WordsData>, private val selectedCar
 
     interface OnCardAdapterListener{
         fun OnClickCard(word: String, wordsData: WordsData, holder: ViewHolder)
-        fun OnClickedDataSaved(wordsData: WordsData)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -71,7 +70,6 @@ class CardAdapter(private val wordList: List<WordsData>, private val selectedCar
 
             if(!isHost && !isWaiter){
                 listener.OnClickCard(word, selectedCard, holder)
-                listener.OnClickedDataSaved(selectedCard)
             }
 
         }

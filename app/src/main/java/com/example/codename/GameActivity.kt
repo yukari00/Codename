@@ -154,17 +154,12 @@ class GameActivity : AppCompatActivity(), OnFragmentListener{
                         Log.d("selectedCardList", "$selectedCardList")
                     }
 
-
-                    val onceClicked = mutableListOf<Int>()
                     val redCardIndex = mutableListOf<Int>()
                     val blueCardIndex = mutableListOf<Int>()
-
 
                     newTurn()
 
                     val listItem = mutableListOf<String>()
-
-                    val clickedDataList = mutableListOf<WordsData>()
 
                     val adapter = CardAdapter(list, selectedCardList, object : CardAdapter.OnCardAdapterListener {
                         override fun OnClickCard(word: String, wordsData: WordsData, holder: CardAdapter.ViewHolder) {
@@ -173,6 +168,7 @@ class GameActivity : AppCompatActivity(), OnFragmentListener{
                             val hashmap = it["words"] as List<HashMap<String, String>>
                             val index = hashmap.indexOfFirst { it.containsValue(word) }
                             Log.d("index", "$index")
+
 
                             val wordsDataList = mutableListOf<WordsData>()
                             for(i in 0 .. 24){
@@ -187,11 +183,13 @@ class GameActivity : AppCompatActivity(), OnFragmentListener{
                                 val numCardPick = it.getLong("number of Cards to pick")?.toInt()
                                     ?: return@addSnapshotListener
 
-                                if (listItem.size == numCardPick) {
-                                    listItem.removeAt(0)
-                                    listItem.add(word)
-                                } else {
-                                    listItem.add(word)
+                                if (!listItem.contains(word)){
+                                    if (listItem.size == numCardPick) {
+                                        listItem.removeAt(0)
+                                        listItem.add(word)
+                                    } else {
+                                        listItem.add(word)
+                                    }
                                 }
 
                                 chosen_cards.setText("${listItem.joinToString()}")
@@ -201,17 +199,9 @@ class GameActivity : AppCompatActivity(), OnFragmentListener{
                                     val voteData = Member(nickname, isMyTeam, isHost, vote = listItem)
                                     database.collection(dbCollection).document(keyword).collection("members").document(nickname).set(voteData)
 
-                                    Log.d("clickedDataList", "$clickedDataList")
                                     waitUntilAllVote(redCardIndex, blueCardIndex, wordsDataList)
                                 }
                             }
-                        }
-
-                        override fun OnClickedDataSaved(
-                            wordsData: WordsData
-                        ) {
-                            val clickedData = wordsData
-                            clickedDataList.add(clickedData)
                         }
                     })
                     recycler_view.layoutManager = GridLayoutManager(this, 5)
