@@ -168,14 +168,36 @@ class GameActivity : AppCompatActivity(), OnFragmentListener{
                 when(color){
                     "RED" -> NumRedCard++
                     "BLUE" -> NumBlueCard++
+                    "GRAY" -> {
+                        soundPool?.play2(soundIdIncorrect)
+                        Toast.makeText(
+                            this@GameActivity,
+                            "ゲームオーバーです",
+                            Toast.LENGTH_LONG
+                        ).show()
+                    }
                 }
             }
         }
-
         remaining_red.setText("赤カードの残り枚数:")
         remaining_blue.setText("青カードの残り枚数:")
         red_number_of_remaining.setText("${8 - NumRedCard}")
         blue_number_of_remaining.setText("${7 - NumBlueCard}")
+
+        Log.d("NumRedCard", "$NumRedCard")
+        Log.d("NumBlueCard", "$NumBlueCard")
+        if (NumRedCard == 8) {
+            Toast.makeText(
+                this@GameActivity,
+                "赤チームの勝利です",
+                Toast.LENGTH_LONG
+            ).show()
+        }
+        if (NumBlueCard == 7) Toast.makeText(
+            this@GameActivity,
+            "青チームの勝利です",
+            Toast.LENGTH_LONG
+        ).show()
 
         when (turnCount % 2) {
             0 -> {
@@ -298,18 +320,6 @@ class GameActivity : AppCompatActivity(), OnFragmentListener{
                     }
 
                 }
-
-                Log.d("clickedData", "$clickedData")
-                if (redCardIndex.size == 8) Toast.makeText(
-                    this@GameActivity,
-                    "赤チームの勝利です",
-                    Toast.LENGTH_LONG
-                ).show()
-                if (blueCardIndex.size == 7) Toast.makeText(
-                    this@GameActivity,
-                    "青チームの勝利です",
-                    Toast.LENGTH_LONG
-                ).show()
 
                 turnCount++
 
