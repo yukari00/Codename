@@ -13,4 +13,8 @@ interface OnFragmentListener {
 
     //GameHostFragment
     fun OnHostCallBack(hint: String, numCardPick: Int)
+
+    //ResultFragment
+    fun OnStartAnotherGame(turnCount: Int)
+    fun OnGoBackOnGameSettingFragment()
 }

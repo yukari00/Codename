@@ -81,6 +81,8 @@ class GameActivity : AppCompatActivity(), OnFragmentListener{
                     if(e != null) return@addSnapshotListener
                     val selectedCardList = mutableListOf<WordsData>()
 
+                    supportFragmentManager.beginTransaction().remove(ResultFragment()).commit();
+
                     if(query == null || query.isEmpty){
 
                         remaining_red.setText("赤カードの残り枚数:")
@@ -158,6 +160,17 @@ class GameActivity : AppCompatActivity(), OnFragmentListener{
         turnCount = turnCountList.max()?: return
         Log.d("turnCount", "$turnCount")
 
+        when (turnCount % 2) {
+            0 -> {
+                turn = Turn.RED_TEAM_TURN
+                text_which_team_turn.setText("赤チームのターンです")
+            }
+            1 -> {
+                turn = Turn.BLUE_TEAM_TURN
+                text_which_team_turn.setText("青チームのターンです")
+            }
+        }
+
         var NumRedCard = 0
         var NumBlueCard = 0
 
@@ -170,11 +183,9 @@ class GameActivity : AppCompatActivity(), OnFragmentListener{
                     "BLUE" -> NumBlueCard++
                     "GRAY" -> {
                         soundPool?.play2(soundIdIncorrect)
-                        Toast.makeText(
-                            this@GameActivity,
-                            "ゲームオーバーです",
-                            Toast.LENGTH_LONG
-                        ).show()
+                        val teamGotGray = if(turnCount % 2 == 0) Team.BLUE else Team.RED
+                        supportFragmentManager.beginTransaction()
+                            .replace(R.id.container_game, ResultFragment.newInstance("GRAY", turnCount,teamGotGray)).commit()
                     }
                 }
             }
@@ -186,29 +197,12 @@ class GameActivity : AppCompatActivity(), OnFragmentListener{
 
         Log.d("NumRedCard", "$NumRedCard")
         Log.d("NumBlueCard", "$NumBlueCard")
-        if (NumRedCard == 8) {
-            Toast.makeText(
-                this@GameActivity,
-                "赤チームの勝利です",
-                Toast.LENGTH_LONG
-            ).show()
-        }
-        if (NumBlueCard == 7) Toast.makeText(
-            this@GameActivity,
-            "青チームの勝利です",
-            Toast.LENGTH_LONG
-        ).show()
 
-        when (turnCount % 2) {
-            0 -> {
-                turn = Turn.RED_TEAM_TURN
-                text_which_team_turn.setText("赤チームのターンです")
-            }
-            1 -> {
-                turn = Turn.BLUE_TEAM_TURN
-                text_which_team_turn.setText("青チームのターンです")
-            }
-        }
+        if (NumRedCard == 8) supportFragmentManager.beginTransaction()
+                .replace(R.id.container_game, ResultFragment.newInstance("RED", turnCount, null)).commit()
+
+        if (NumBlueCard == 7) supportFragmentManager.beginTransaction()
+            .replace(R.id.container_game, ResultFragment.newInstance("BLUE", turnCount, null)).commit()
 
         for(i in 0 until query.documents.size){
             val cardsHash = query.documents[i]["clickedWords"] as MutableList<HashMap<String, String>>? ?: return
@@ -353,7 +347,6 @@ class GameActivity : AppCompatActivity(), OnFragmentListener{
             Turn.RED_TEAM_TURN -> redTurn()
             Turn.BLUE_TEAM_TURN -> blueTurn()
         }
-
     }
 
     private fun blueTurn() {
@@ -472,6 +465,24 @@ class GameActivity : AppCompatActivity(), OnFragmentListener{
 
         supportFragmentManager.beginTransaction()
             .replace(R.id.container_game_detail, GameWaitingFragment())
+            .commit()
+    }
+
+    override fun OnStartAnotherGame(turnCount: Int) {
+
+            database.collection(dbCollection).document(keyword).collection("selectedCards").get().addOnSuccessListener {
+                for( i in 0 until it.documents.size){
+                    val documentId = it.documents[i].id
+                    database.collection(dbCollection).document(keyword).collection("selectedCards").document(documentId).delete()
+                }
+
+                importWordsFromCSV()
+            }
+    }
+
+    override fun OnGoBackOnGameSettingFragment() {
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.container_game, GameSettingFragment.newInstance(keyword, nickname))
             .commit()
     }
 
