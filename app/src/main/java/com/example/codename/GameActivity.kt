@@ -4,13 +4,9 @@ import android.content.Intent
 import android.content.res.AssetManager
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.provider.SyncStateContract.Helpers.update
-import android.provider.UserDictionary
-import android.util.ArrayMap
 import android.util.Log
 import android.view.View
 import android.widget.Toast
-import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.FragmentActivity
 import androidx.recyclerview.widget.GridLayoutManager
 import com.google.firebase.firestore.*
@@ -18,14 +14,9 @@ import com.opencsv.CSVParserBuilder
 import com.opencsv.CSVReader
 import com.opencsv.CSVReaderBuilder
 import kotlinx.android.synthetic.main.activity_game.*
-import kotlinx.android.synthetic.main.card_words.*
-import kotlinx.android.synthetic.main.card_words.view.*
-import kotlinx.android.synthetic.main.card_words.view.word
 import kotlinx.android.synthetic.main.fragment_game_player.*
-import org.apache.commons.lang3.mutable.Mutable
 import java.io.IOException
 import java.io.InputStreamReader
-import java.lang.RuntimeException
 import java.util.*
 import kotlin.collections.HashMap
 import kotlin.random.Random
@@ -115,44 +106,46 @@ class GameActivity : AppCompatActivity(), OnFragmentListener{
                     val adapter = CardAdapter(wordsDataList, selectedCardList, object : CardAdapter.OnCardAdapterListener {
                         override fun OnClickCard(word: String, wordsData: WordsData, holder: CardAdapter.ViewHolder) {
 
-                            val myTeam = if(isMyTeam == Team.RED) "RED" else "BLUE"
-
-                            val index = hashmap.indexOfFirst { it.containsValue(word) }
-                            Log.d("index", "$index")
-
-                            database.collection(dbCollection).document(keyword).collection("words").document(myTeam).addSnapshotListener { it, e ->
-
-                                if (e != null) return@addSnapshotListener
-                                if (it == null || !it.exists()) return@addSnapshotListener
-
-                                val numCardPick = it.getLong("number of Cards to pick")?.toInt()
-                                    ?: return@addSnapshotListener
-
-                                if (!listItem.contains(word)){
-                                    if (listItem.size == numCardPick) {
-                                        listItem.removeAt(0)
-                                        listItem.add(word)
-                                    } else {
-                                        listItem.add(word)
-                                    }
-                                }
-
-                                chosen_cards.setText("${listItem.joinToString()}")
-
-                                btn_vote.setOnClickListener {
-                                    //Todo 投票ボタン処理
-                                    val voteData = Member(nickname, isMyTeam, isHost, vote = listItem)
-                                    database.collection(dbCollection).document(keyword).collection("members").document(nickname).set(voteData)
-
-                                    waitUntilAllVote(redCardIndex, blueCardIndex, wordsDataList)
-                                }
-                            }
+                            showWhatYouClicked(listItem, word, redCardIndex, blueCardIndex, wordsDataList)
                         }
                     })
                     recycler_view.layoutManager = GridLayoutManager(this, 5)
                     recycler_view.adapter = adapter
                 }
             }
+    }
+
+    private fun showWhatYouClicked(listItem: MutableList<String>, word: String, redCardIndex: MutableList<Int>,
+                                   blueCardIndex: MutableList<Int>, wordsDataList: MutableList<WordsData>) {
+
+        val myTeam = if(isMyTeam == Team.RED) "RED" else "BLUE"
+        database.collection(dbCollection).document(keyword).collection("words").document(myTeam).addSnapshotListener { it, e ->
+
+            if (e != null) return@addSnapshotListener
+            if (it == null || !it.exists()) return@addSnapshotListener
+
+            val numCardPick = it.getLong("number of Cards to pick")?.toInt()
+                ?: return@addSnapshotListener
+
+            if (!listItem.contains(word)){
+                if (listItem.size == numCardPick) {
+                    listItem.removeAt(0)
+                    listItem.add(word)
+                } else {
+                    listItem.add(word)
+                }
+            }
+
+            chosen_cards.setText("${listItem.joinToString()}")
+
+            btn_vote.setOnClickListener {
+                //投票ボタン処理
+                val voteData = Member(nickname, isMyTeam, isHost, vote = listItem)
+                database.collection(dbCollection).document(keyword).collection("members").document(nickname).set(voteData)
+
+                waitUntilAllVote(redCardIndex, blueCardIndex, wordsDataList)
+            }
+        }
     }
 
     private fun willUpdate(query: QuerySnapshot, selectedCardList: MutableList<WordsData>) {
