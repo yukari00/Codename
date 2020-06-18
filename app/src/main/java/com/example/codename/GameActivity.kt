@@ -24,7 +24,7 @@ import kotlin.random.Random
 class GameActivity : AppCompatActivity(), OnFragmentListener{
 
     val database = FirebaseFirestore.getInstance()
-    private lateinit var listening: ListenerRegistration
+    var listening: ListenerRegistration? = null
 
     var keyword: String = ""
     var nickname: String = ""
@@ -418,7 +418,7 @@ class GameActivity : AppCompatActivity(), OnFragmentListener{
     override fun onPause() {
         super.onPause()
 
-        listening.remove()
+        if( listening != null ) listening?.remove()
     }
 
     companion object {
@@ -470,20 +470,39 @@ class GameActivity : AppCompatActivity(), OnFragmentListener{
 
     override fun OnStartAnotherGame(turnCount: Int) {
 
-            database.collection(dbCollection).document(keyword).collection("selectedCards").get().addOnSuccessListener {
-                for( i in 0 until it.documents.size){
+        database.collection(dbCollection).document(keyword).collection("selectedCards").get()
+            .addOnSuccessListener {
+                for (i in 0 until it.documents.size) {
                     val documentId = it.documents[i].id
-                    database.collection(dbCollection).document(keyword).collection("selectedCards").document(documentId).delete()
+                    database.collection(dbCollection).document(keyword).collection("selectedCards")
+                        .document(documentId).delete()
                 }
-
                 importWordsFromCSV()
             }
     }
 
     override fun OnGoBackOnGameSettingFragment() {
-        supportFragmentManager.beginTransaction()
-            .replace(R.id.container_game, GameSettingFragment.newInstance(keyword, nickname))
-            .commit()
+
+        database.collection(dbCollection).document(keyword).collection("selectedCards").get().addOnSuccessListener {
+            for( i in 0 until it.documents.size){
+                val documentId = it.documents[i].id
+                database.collection(dbCollection).document(keyword).collection("selectedCards").document(documentId).delete()
+            }
+
+            recycler_view.layoutManager = null
+            recycler_view.adapter = null
+            btn_explain.visibility = View.INVISIBLE
+            text_which_team_turn.setText("")
+            remaining_red.setText("")
+            remaining_blue.setText("")
+            blue_number_of_remaining.setText("")
+            red_number_of_remaining.setText("")
+
+            //importWordsFromCSV()
+            supportFragmentManager.beginTransaction()
+                .replace(R.id.container_game, GameSettingFragment.newInstance(keyword, nickname))
+                .commit()
+        }
     }
 
     private fun importWordsFromCSV() {

@@ -59,17 +59,6 @@ class GameSettingFragment : Fragment() {
         update()
         btn_prepared.setOnClickListener {
             soundPool?.play2(soundIdButtonClicked)
-            //Todo 準備完了ボタン処
-            when (isPrepared) {
-                false -> {
-                    btn_prepared.setText("待機中")
-                    isPrepared = true
-                }
-                true -> {
-                    btn_prepared.setText("準備完了")
-                    isPrepared = false
-                }
-            }
 
             listener?.GameStart()
             getFragmentManager()?.beginTransaction()?.remove(this)?.commit()
@@ -142,14 +131,15 @@ class GameSettingFragment : Fragment() {
         adapter.clear()
         listeningUpdate.remove()
         listeningGetTwoTeam.remove()
-        listeningGetBlueTeam.remove()
-        listeningHost.remove()
+        //listeningGetBlueTeam.remove()
+        //listeningHost.remove()
     }
 
     private fun update() {
 
         listeningUpdate = database.collection(dbCollection).document(keyword).collection("members").addSnapshotListener { it, e->
 
+            Log.d("ああああああ", "テストです")
             val membersListUpdate: MutableList<String> = mutableListOf()
 
             if(e != null) return@addSnapshotListener
@@ -195,21 +185,20 @@ class GameSettingFragment : Fragment() {
     }
 
     private fun pickBlueteam(teamRed: MutableList<String>) {
-        listeningGetBlueTeam = database.collection(dbCollection).document(keyword).collection("members")
-            .whereEqualTo("team", "BLUE").addSnapshotListener { it, e ->
+        database.collection(dbCollection).document(keyword).collection("members")
+            .whereEqualTo("team", "BLUE").get().addOnSuccessListener {
 
-                if (e != null) return@addSnapshotListener
-                if(it == null || it.isEmpty) return@addSnapshotListener
+                if(it == null || it.isEmpty) return@addOnSuccessListener
 
                 val teamBlue: MutableList<String> = mutableListOf()
                 for (document in it) {
                     teamBlue.add(document.getString("name")!!)
                 }
 
-
                 Log.d("チーム赤", "$teamRed")
                 Log.d("チーム青", "$teamBlue")
 
+                Log.d("チーム赤", "${teamRed.size}")
                 text_red_mem_num.setText("赤チームの人数は${teamRed.size}人です")
                 text_blue_mem_num.setText("青チームの人数は${teamBlue.size}人です")
 
@@ -241,18 +230,18 @@ class GameSettingFragment : Fragment() {
 
     private fun showHost(myTeam: String) {
 
-        listeningHost = database.collection(dbCollection).document(keyword).collection("members")
-            .whereEqualTo("host", true).addSnapshotListener { it, e ->
+        database.collection(dbCollection).document(keyword).collection("members")
+            .whereEqualTo("host", true).get().addOnSuccessListener {
 
-                if (e != null) return@addSnapshotListener
-                if (it == null) return@addSnapshotListener
+                if (it == null) return@addOnSuccessListener
 
                 var host: String? = ""
                 if (it.isEmpty) {
                     text_if_leader.setText("話し合いでチームリーダを決めてください")
-                    btn_prepared.isEnabled = false
+                    btn_prepared?.isEnabled = false
                 } else {
-                    btn_prepared.isEnabled = it.size() == 2
+                    //if(btn_prepared == null) return@addSnapshotListener //Todo なぜかbtn_preparedがnullになる
+                    btn_prepared?.isEnabled = it.size() == 2
 
                     for (document in it) {
                         if (document.getString("team") == myTeam) {
@@ -376,19 +365,6 @@ class GameSettingFragment : Fragment() {
             val myTeamString = if (isMyTeam == Team.RED) "RED" else "BLUE"
             showHost(myTeamString)
 
-            listeningHostInfo = database.collection(dbCollection).document(keyword).collection("members")
-                .whereEqualTo("host", true).addSnapshotListener { it, e ->
-
-                    if (e != null) return@addSnapshotListener
-                    if(it == null || it.isEmpty) return@addSnapshotListener
-
-                    val host: MutableList<QueryDocumentSnapshot> = mutableListOf()
-                    for (document in it) {
-                        host.add(document)
-                    }
-
-                    btn_prepared.isEnabled = host.size == 2
-                }
         }
     }
 
