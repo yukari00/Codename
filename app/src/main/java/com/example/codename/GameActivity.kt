@@ -440,6 +440,11 @@ class GameActivity : AppCompatActivity(), OnFragmentListener{
     override fun GameStart() {
         locateEachCard()
         btn_explain.visibility = View.VISIBLE
+        btn_explain.setOnClickListener {
+            supportFragmentManager.beginTransaction()
+                .replace(R.id.container_game, ExplanationFragment())
+                .commit()
+        }
     }
 
     override fun OnMemberDeleted() {

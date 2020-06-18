@@ -2,6 +2,7 @@ package com.example.codename
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import kotlinx.android.synthetic.main.activity_game.*
 import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {
@@ -25,6 +26,12 @@ class MainActivity : AppCompatActivity() {
             createRoom()
         }
 
+        btn_explain_main.setOnClickListener {
+
+            soundPool?.play2(soundIdButtonClicked)
+            supportFragmentManager.beginTransaction()
+                .replace(R.id.container_type_room_info, ExplanationFragment()).commit()
+        }
     }
 
     private fun createRoom() {
