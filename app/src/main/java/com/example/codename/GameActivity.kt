@@ -4,6 +4,7 @@ import android.content.Intent
 import android.content.res.AssetManager
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.provider.SyncStateContract.Helpers.update
 import android.provider.UserDictionary
 import android.util.ArrayMap
 import android.util.Log
@@ -12,10 +13,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.FragmentActivity
 import androidx.recyclerview.widget.GridLayoutManager
-import com.google.firebase.firestore.DocumentReference
-import com.google.firebase.firestore.FieldValue
-import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.ListenerRegistration
+import com.google.firebase.firestore.*
 import com.opencsv.CSVParserBuilder
 import com.opencsv.CSVReader
 import com.opencsv.CSVReaderBuilder
@@ -71,7 +69,7 @@ class GameActivity : AppCompatActivity(), OnFragmentListener{
 
     }
 
-    private fun setCardWords() {
+    private fun locateEachCard() {
 
         listening = database.collection(dbCollection).document(keyword).collection("words").document(keyword)
             .addSnapshotListener { it, e ->
@@ -80,11 +78,11 @@ class GameActivity : AppCompatActivity(), OnFragmentListener{
                 if (it == null || !it.exists()) return@addSnapshotListener
 
 
-                val list = mutableListOf<WordsData>()
+                val wordsDataList = mutableListOf<WordsData>()
                 val hashmap = it["words"] as MutableList<HashMap<String, String>>
 
                 for(i in 0 .. 24){
-                    list.add(WordsData(hashmap[i]["word"], hashmap[i]["color"]))
+                    wordsDataList.add(WordsData(hashmap[i]["word"], hashmap[i]["color"]))
                 }
 
                 database.collection(dbCollection).document(keyword).collection("selectedCards").addSnapshotListener { query, e ->
@@ -104,54 +102,7 @@ class GameActivity : AppCompatActivity(), OnFragmentListener{
 
                     } else{
 
-                        val turnCountList = mutableListOf<Int>()
-                        for (i in query.documents.indices){
-                           val tCount = query.documents[i].getLong("turnCount")?.toInt() ?: return@addSnapshotListener
-                            turnCountList.add(tCount)
-                        }
-                        turnCount = turnCountList.max()?: return@addSnapshotListener
-                        Log.d("turnCount", "$turnCount")
-
-                        var NumRedCard = 0
-                        var NumBlueCard = 0
-
-                        query.documents.forEach {
-                            val wordList = it["clickedWords"] as List<HashMap<String, String>>
-                            for (j in wordList.indices){
-                                val color = wordList[j]["color"]
-                                when(color){
-                                    "RED" -> NumRedCard++
-                                    "BLUE" -> NumBlueCard++
-                                }
-                            }
-                        }
-
-                        remaining_red.setText("赤カードの残り枚数:")
-                        remaining_blue.setText("青カードの残り枚数:")
-                        red_number_of_remaining.setText("${8 - NumRedCard}")
-                        blue_number_of_remaining.setText("${7 - NumBlueCard}")
-
-                        when (turnCount % 2) {
-                            0 -> {
-                                turn = Turn.RED_TEAM_TURN
-                                text_which_team_turn.setText("赤チームのターンです")
-                            }
-                            1 -> {
-                                turn = Turn.BLUE_TEAM_TURN
-                                text_which_team_turn.setText("青チームのターンです")
-                            }
-                        }
-
-                        for(i in 0 until query.documents.size){
-                            val cardsHash = query.documents[i]["clickedWords"] as MutableList<HashMap<String, String>>? ?: return@addSnapshotListener
-
-                            for (j in 0 until cardsHash.size ){
-                                selectedCardList.add(WordsData(cardsHash[j]["word"], cardsHash[j]["color"]))
-                            }
-                        }
-
-                        Log.d("query.documents.size", "${query.documents.size}")
-                        Log.d("selectedCardList", "$selectedCardList")
+                        willUpdate(query, selectedCardList)
                     }
 
                     val redCardIndex = mutableListOf<Int>()
@@ -161,19 +112,13 @@ class GameActivity : AppCompatActivity(), OnFragmentListener{
 
                     val listItem = mutableListOf<String>()
 
-                    val adapter = CardAdapter(list, selectedCardList, object : CardAdapter.OnCardAdapterListener {
+                    val adapter = CardAdapter(wordsDataList, selectedCardList, object : CardAdapter.OnCardAdapterListener {
                         override fun OnClickCard(word: String, wordsData: WordsData, holder: CardAdapter.ViewHolder) {
 
                             val myTeam = if(isMyTeam == Team.RED) "RED" else "BLUE"
-                            val hashmap = it["words"] as List<HashMap<String, String>>
+
                             val index = hashmap.indexOfFirst { it.containsValue(word) }
                             Log.d("index", "$index")
-
-
-                            val wordsDataList = mutableListOf<WordsData>()
-                            for(i in 0 .. 24){
-                                wordsDataList.add(WordsData(hashmap[i]["word"], hashmap[i]["color"]))
-                            }
 
                             database.collection(dbCollection).document(keyword).collection("words").document(myTeam).addSnapshotListener { it, e ->
 
@@ -208,6 +153,58 @@ class GameActivity : AppCompatActivity(), OnFragmentListener{
                     recycler_view.adapter = adapter
                 }
             }
+    }
+
+    private fun willUpdate(query: QuerySnapshot, selectedCardList: MutableList<WordsData>) {
+
+        val turnCountList = mutableListOf<Int>()
+        for (i in query.documents.indices){
+            val tCount = query.documents[i].getLong("turnCount")?.toInt() ?: return
+            turnCountList.add(tCount)
+        }
+        turnCount = turnCountList.max()?: return
+        Log.d("turnCount", "$turnCount")
+
+        var NumRedCard = 0
+        var NumBlueCard = 0
+
+        query.documents.forEach {
+            val wordList = it["clickedWords"] as List<HashMap<String, String>>
+            for (j in wordList.indices){
+                val color = wordList[j]["color"]
+                when(color){
+                    "RED" -> NumRedCard++
+                    "BLUE" -> NumBlueCard++
+                }
+            }
+        }
+
+        remaining_red.setText("赤カードの残り枚数:")
+        remaining_blue.setText("青カードの残り枚数:")
+        red_number_of_remaining.setText("${8 - NumRedCard}")
+        blue_number_of_remaining.setText("${7 - NumBlueCard}")
+
+        when (turnCount % 2) {
+            0 -> {
+                turn = Turn.RED_TEAM_TURN
+                text_which_team_turn.setText("赤チームのターンです")
+            }
+            1 -> {
+                turn = Turn.BLUE_TEAM_TURN
+                text_which_team_turn.setText("青チームのターンです")
+            }
+        }
+
+        for(i in 0 until query.documents.size){
+            val cardsHash = query.documents[i]["clickedWords"] as MutableList<HashMap<String, String>>? ?: return
+
+            for (j in 0 until cardsHash.size ){
+                selectedCardList.add(WordsData(cardsHash[j]["word"], cardsHash[j]["color"]))
+            }
+        }
+
+        Log.d("query.documents.size", "${query.documents.size}")
+        Log.d("selectedCardList", "$selectedCardList")
     }
 
     private fun waitUntilAllVote(redCardIndex: MutableList<Int>, blueCardIndex: MutableList<Int>, workDataList: MutableList<WordsData>) {
@@ -289,7 +286,6 @@ class GameActivity : AppCompatActivity(), OnFragmentListener{
                         it.word == word
                     }
 
-                    //val wordsData = data.toList()[0].wordsData
                     if(data.isEmpty()) return@addOnSuccessListener
                     val wordsData = data[0]
 
@@ -331,8 +327,6 @@ class GameActivity : AppCompatActivity(), OnFragmentListener{
 
             }
         }
-
-
     }
 
     private fun deleteHostHintInfo() {
@@ -360,9 +354,7 @@ class GameActivity : AppCompatActivity(), OnFragmentListener{
     }
 
     private fun blueTurn() {
-        if(isMyTeam == Team.BLUE && isHost) host()
-        else if(isMyTeam == Team.BLUE) player()
-        else waitUntilYourTurn()
+        if(isMyTeam == Team.BLUE && isHost) host() else if(isMyTeam == Team.BLUE) player() else waitUntilYourTurn()
     }
 
     private fun redTurn() {
@@ -370,14 +362,12 @@ class GameActivity : AppCompatActivity(), OnFragmentListener{
         Log.d("isMyTeam", "$isMyTeam")
         Log.d("isHost", "$isHost")
 
-
     }
 
     private fun waitUntilYourTurn() {
         isWaiter = true
         supportFragmentManager.beginTransaction()
             .replace(R.id.container_game_detail, GameWaitingFragment()).commit()
-
 
     }
 
@@ -426,7 +416,6 @@ class GameActivity : AppCompatActivity(), OnFragmentListener{
             for (member in membersList){
                 database.collection(dbCollection).document(keyword).collection("members").document(member).update(updates)
             }
-
         }
     }
 
@@ -449,14 +438,13 @@ class GameActivity : AppCompatActivity(), OnFragmentListener{
     }
 
     override fun OnMembersGathered() {
-        //Todo チーム編成（ランダム）
         supportFragmentManager.beginTransaction()
             .replace(R.id.container_game, GameSettingFragment.newInstance(keyword, nickname))
             .commit()
     }
 
     override fun GameStart() {
-        setCardWords()
+        locateEachCard()
         btn_explain.visibility = View.VISIBLE
     }
 
@@ -505,9 +493,6 @@ class GameActivity : AppCompatActivity(), OnFragmentListener{
     private fun writeCSVDataToFirebase(tempList: MutableList<Array<String>>?) {
 
         val selectedWordsList: MutableList<WordsData> = select25Words(tempList).toMutableList()
-
-        //赤が８
-        //青が７
 
       val list = mutableListOf<Int>()
 
@@ -559,8 +544,6 @@ class GameActivity : AppCompatActivity(), OnFragmentListener{
         }
         val notNullList = list.distinct()
 
-        Log.d("CHHhhhhhhhhhhh", "$notNullList")
-
         val result: MutableList<WordsData> = mutableListOf()
         val remaining: MutableList<WordsData> = notNullList.toMutableList()
 
@@ -577,8 +560,6 @@ class GameActivity : AppCompatActivity(), OnFragmentListener{
                 remaining.set(index, lastElement)
             }
         }
-
-        Log.d("CHHhhhhhhhhhhhHHH", "$result")
 
         return result
     }
