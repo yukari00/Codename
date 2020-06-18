@@ -370,9 +370,7 @@ class GameActivity : AppCompatActivity(), OnFragmentListener{
     private fun player() {
         isWaiter = false
         val myTeam = if(isMyTeam == Team.RED) "RED" else "BLUE"
-        database.collection(dbCollection).document(keyword).collection("words").document(myTeam).addSnapshotListener { it, e ->
-
-            if(e != null) return@addSnapshotListener
+        database.collection(dbCollection).document(keyword).collection("words").document(myTeam).get().addOnSuccessListener {
 
             if (it == null || !it.exists()) {
                 supportFragmentManager.beginTransaction()
@@ -380,8 +378,8 @@ class GameActivity : AppCompatActivity(), OnFragmentListener{
                     .commit()
             }
 
-            val hint = it?.getString("hint") ?: return@addSnapshotListener
-            val numCardPick = it.getLong("number of Cards to pick")?.toInt() ?: return@addSnapshotListener
+            val hint = it?.getString("hint") ?: return@addOnSuccessListener
+            val numCardPick = it.getLong("number of Cards to pick")?.toInt() ?: return@addOnSuccessListener
             Log.d("hint", hint)
             Log.d("number of Cards to pick", "$numCardPick")
             supportFragmentManager.beginTransaction()
