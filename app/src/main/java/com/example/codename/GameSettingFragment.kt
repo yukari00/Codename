@@ -32,10 +32,6 @@ class GameSettingFragment : Fragment() {
     private var membersList: MutableList<String> = mutableListOf()
 
     private lateinit var listeningUpdate: ListenerRegistration
-    private lateinit var listeningGetTwoTeam: ListenerRegistration
-    private lateinit var listeningGetBlueTeam: ListenerRegistration
-    private lateinit var listeningHost: ListenerRegistration
-    private lateinit var listeningHostInfo: ListenerRegistration
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -130,16 +126,12 @@ class GameSettingFragment : Fragment() {
         listener = null
         adapter.clear()
         listeningUpdate.remove()
-        listeningGetTwoTeam.remove()
-        //listeningGetBlueTeam.remove()
-        //listeningHost.remove()
     }
 
     private fun update() {
 
         listeningUpdate = database.collection(dbCollection).document(keyword).collection("members").addSnapshotListener { it, e->
 
-            Log.d("ああああああ", "テストです")
             val membersListUpdate: MutableList<String> = mutableListOf()
 
             if(e != null) return@addSnapshotListener
@@ -167,13 +159,11 @@ class GameSettingFragment : Fragment() {
 
     private fun getTwoTeamInfoFromFirestore() {
 
-       listeningGetTwoTeam =  database.collection(dbCollection).document(keyword).collection("members")
-            .whereEqualTo("team", "RED").addSnapshotListener { it, e ->
+       database.collection(dbCollection).document(keyword).collection("members")
+            .whereEqualTo("team", "RED").get().addOnSuccessListener {
                 val teamRed: MutableList<String> = mutableListOf()
 
-                if (e != null) return@addSnapshotListener
-
-                if(it == null || it.isEmpty) return@addSnapshotListener
+                if(it == null || it.isEmpty) return@addOnSuccessListener
                 for (document in it) {
                     teamRed.add(document.getString("name")!!)
                 }
