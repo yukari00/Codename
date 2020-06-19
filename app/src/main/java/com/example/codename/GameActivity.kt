@@ -24,7 +24,8 @@ import kotlin.random.Random
 class GameActivity : AppCompatActivity(), OnFragmentListener{
 
     val database = FirebaseFirestore.getInstance()
-    var listening: ListenerRegistration? = null
+    var listeningWords: ListenerRegistration? = null
+    var listeningSelectedCards: ListenerRegistration? = null
 
     var keyword: String = ""
     var nickname: String = ""
@@ -62,7 +63,7 @@ class GameActivity : AppCompatActivity(), OnFragmentListener{
 
     private fun locateEachCard() {
 
-        listening = database.collection(dbCollection).document(keyword).collection("words").document(keyword)
+        listeningWords = database.collection(dbCollection).document(keyword).collection("words").document(keyword)
             .addSnapshotListener { it, e ->
 
                 if (e != null) return@addSnapshotListener
@@ -76,7 +77,7 @@ class GameActivity : AppCompatActivity(), OnFragmentListener{
                     wordsDataList.add(WordsData(hashmap[i]["word"], hashmap[i]["color"]))
                 }
 
-                database.collection(dbCollection).document(keyword).collection("selectedCards").addSnapshotListener { query, e ->
+                listeningSelectedCards = database.collection(dbCollection).document(keyword).collection("selectedCards").addSnapshotListener { query, e ->
 
                     if(e != null) return@addSnapshotListener
                     val selectedCardList = mutableListOf<WordsData>()
@@ -241,12 +242,11 @@ class GameActivity : AppCompatActivity(), OnFragmentListener{
                 Log.d("players", "$players")
                 Log.d("voteItemList", "$voteItemList")
 
-                resultOfVote(voteItemList,redCardIndex, blueCardIndex, workDataList)
+                resultOfVote(voteItemList, workDataList)
             }
     }
 
-    private fun resultOfVote(voteItemList: MutableList<String>, redCardIndex: MutableList<Int>,
-                             blueCardIndex: MutableList<Int>, workDataList: MutableList<WordsData>) {
+    private fun resultOfVote(voteItemList: MutableList<String>, workDataList: MutableList<WordsData>) {
 
         val myTeam = if(isMyTeam == Team.RED) "RED" else "BLUE"
         database.collection(dbCollection).document(keyword).collection("words").document(myTeam).get().addOnSuccessListener {
@@ -299,20 +299,6 @@ class GameActivity : AppCompatActivity(), OnFragmentListener{
                     val wordsData = data[0]
 
                     clickedData.add(wordsData)
-
-                    when (workDataList[index].color) {
-                        "RED" -> redCardIndex.add(index)
-                        "BLUE" -> blueCardIndex.add(index)
-                        "GRAY" -> {
-                            soundPool?.play2(soundIdIncorrect)
-                            Toast.makeText(
-                                this@GameActivity,
-                                "ゲームオーバーです",
-                                Toast.LENGTH_LONG
-                            ).show()
-                        }
-                    }
-
                 }
 
                 turnCount++
@@ -416,7 +402,7 @@ class GameActivity : AppCompatActivity(), OnFragmentListener{
     override fun onPause() {
         super.onPause()
 
-        if( listening != null ) listening?.remove()
+        if( listeningWords != null ) listeningWords?.remove()
     }
 
     companion object {
@@ -485,6 +471,9 @@ class GameActivity : AppCompatActivity(), OnFragmentListener{
     }
 
     override fun OnGoBackOnGameSettingFragment() {
+
+        listeningWords?.remove()
+        listeningSelectedCards?.remove()
 
         database.collection(dbCollection).document(keyword).collection("selectedCards").get().addOnSuccessListener {
             for( i in 0 until it.documents.size){
