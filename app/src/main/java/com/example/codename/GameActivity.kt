@@ -66,6 +66,7 @@ class GameActivity : AppCompatActivity(), OnFragmentListener{
         listeningWords = database.collection(dbCollection).document(keyword).collection("words").document(keyword)
             .addSnapshotListener { it, e ->
 
+                Log.d("Check!!!!!!!!!!!!", "Check!!!!!!!!!!!!")
                 if (e != null) return@addSnapshotListener
                 if (it == null || !it.exists()) return@addSnapshotListener
 
@@ -122,13 +123,12 @@ class GameActivity : AppCompatActivity(), OnFragmentListener{
                                    blueCardIndex: MutableList<Int>, wordsDataList: MutableList<WordsData>) {
 
         val myTeam = if(isMyTeam == Team.RED) "RED" else "BLUE"
-        database.collection(dbCollection).document(keyword).collection("words").document(myTeam).addSnapshotListener { it, e ->
+        database.collection(dbCollection).document(keyword).collection("words").document(myTeam).get().addOnSuccessListener{
 
-            if (e != null) return@addSnapshotListener
-            if (it == null || !it.exists()) return@addSnapshotListener
+            if (it == null || !it.exists()) return@addOnSuccessListener
 
             val numCardPick = it.getLong("number of Cards to pick")?.toInt()
-                ?: return@addSnapshotListener
+                ?: return@addOnSuccessListener
 
             if (!listItem.contains(word)){
                 if (listItem.size == numCardPick) {
@@ -490,7 +490,7 @@ class GameActivity : AppCompatActivity(), OnFragmentListener{
             blue_number_of_remaining.setText("")
             red_number_of_remaining.setText("")
 
-            //importWordsFromCSV()
+            importWordsFromCSV()
             supportFragmentManager.beginTransaction()
                 .replace(R.id.container_game, GameSettingFragment.newInstance(keyword, nickname))
                 .commit()
