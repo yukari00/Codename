@@ -62,7 +62,7 @@
         android:layout_width="wrap_content"
         android:layout_height="30dp"
         android:layout_margin="12dp"
-        android:background="@color/WINE_RED"
+        android:background="@drawable/shape_round_coners_winered"
         android:text="作成"
         android:textColor="@color/WHITE"
         app:layout_constraintEnd_toEndOf="parent"

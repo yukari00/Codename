@@ -26,6 +26,7 @@ class GameActivity : AppCompatActivity(), OnFragmentListener{
     val database = FirebaseFirestore.getInstance()
     var listeningWords: ListenerRegistration? = null
     var listeningSelectedCards: ListenerRegistration? = null
+    var listeningMembers: ListenerRegistration? = null
 
     var keyword: String = ""
     var nickname: String = ""
@@ -146,7 +147,7 @@ class GameActivity : AppCompatActivity(), OnFragmentListener{
                 val voteData = Member(nickname, isMyTeam, isHost, vote = listItem)
                 database.collection(dbCollection).document(keyword).collection("members").document(nickname).set(voteData)
 
-                waitUntilAllVote(redCardIndex, blueCardIndex, wordsDataList)
+                waitUntilAllVote(wordsDataList)
             }
         }
     }
@@ -182,7 +183,6 @@ class GameActivity : AppCompatActivity(), OnFragmentListener{
                     "RED" -> NumRedCard++
                     "BLUE" -> NumBlueCard++
                     "GRAY" -> {
-                        soundPool?.play2(soundIdIncorrect)
                         val teamGotGray = if(turnCount % 2 == 0) Team.BLUE else Team.RED
                         supportFragmentManager.beginTransaction()
                             .replace(R.id.container_game, ResultFragment.newInstance("GRAY", turnCount,teamGotGray)).commit()
@@ -210,12 +210,12 @@ class GameActivity : AppCompatActivity(), OnFragmentListener{
         }
     }
 
-    private fun waitUntilAllVote(redCardIndex: MutableList<Int>, blueCardIndex: MutableList<Int>, workDataList: MutableList<WordsData>) {
+    private fun waitUntilAllVote(workDataList: MutableList<WordsData>) {
         supportFragmentManager.beginTransaction()
             .replace(R.id.container_game_detail, GameWaitingFragment()).commit()
 
         val myTeam = if(isMyTeam == Team.RED) "RED" else "BLUE"
-        database.collection(dbCollection).document(keyword).collection("members")
+        listeningMembers = database.collection(dbCollection).document(keyword).collection("members")
             .whereEqualTo("team", myTeam).whereEqualTo("host", false).addSnapshotListener { it, e ->
                 val players: MutableList<String> = mutableListOf()
                 val voteItemList = mutableListOf<String>()
@@ -242,14 +242,10 @@ class GameActivity : AppCompatActivity(), OnFragmentListener{
             val numCardPick = it.getLong("number of Cards to pick")?.toInt() ?: return@addOnSuccessListener
 
             val countWords = voteItemList.groupingBy { it }.eachCount()
-            Log.d("countWords", "$countWords")
 
             val collectionNum = countWords.values
-            Log.d("collection", "$collectionNum")
             val collectionAscending = collectionNum.sorted().distinct()
             val collectionDescending = collectionAscending.reversed()
-            Log.d("collectionAscending", "$collectionAscending")
-            Log.d("collectionDescending", "$collectionDescending")
 
             val selectedWordMapList = mutableListOf<Map.Entry<String, Int>>()
 
@@ -263,22 +259,16 @@ class GameActivity : AppCompatActivity(), OnFragmentListener{
                 }
             }
 
-            Log.d("selectedWordMapList", "$selectedWordMapList")
-
             val selectedWordList = mutableListOf<String>()
             for( i in 0 until numCardPick){
                 val chosenWord = selectedWordMapList[i].key
                 selectedWordList.add(chosenWord)
             }
-            Log.d("selectedWordList", "$selectedWordList")
 
             if (selectedWordList.size == numCardPick){
 
                 val clickedData = mutableListOf<WordsData>()
                 for (word in selectedWordList){
-                    val index = workDataList.indexOfFirst {
-                        it.word == word
-                    }
 
                     val data = workDataList.filter {
                         it.word == word
@@ -292,7 +282,6 @@ class GameActivity : AppCompatActivity(), OnFragmentListener{
 
                 turnCount++
 
-                Log.d("isWaiter", "$isWaiter")
                 val selectedCardsInfo = SelectedCardsInfo(clickedData, turnCount)
                 deleteHostHintInfo()
                 database.collection(dbCollection).document(keyword).collection("selectedCards").add(selectedCardsInfo)
@@ -465,6 +454,7 @@ class GameActivity : AppCompatActivity(), OnFragmentListener{
 
         listeningWords?.remove()
         listeningSelectedCards?.remove()
+        listeningMembers?.remove()
 
         database.collection(dbCollection).document(keyword).collection("selectedCards").get().addOnSuccessListener {
             for( i in 0 until it.documents.size){

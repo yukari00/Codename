@@ -52,7 +52,7 @@
                 android:layout_marginStart="12dp"
                 android:layout_marginEnd="8dp"
                 android:layout_weight="1"
-                android:background="@color/WINE_RED"
+                android:background="@drawable/shape_round_coners_winered"
                 android:elevation="12dp"
                 android:text="ルーム作成"
                 android:textColor="@color/WHITE" />
@@ -65,7 +65,7 @@
                 android:layout_marginEnd="12dp"
                 android:layout_marginBottom="12dp"
                 android:layout_weight="1"
-                android:background="@color/WINE_RED"
+                android:background="@drawable/shape_round_coners_winered"
                 android:elevation="12dp"
                 android:text="ルーム参加"
                 android:textColor="@color/WHITE" />
@@ -78,7 +78,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="12dp"
             android:layout_marginEnd="12dp"
-            android:background="@color/WINE_RED"
+            android:background="@drawable/shape_round_coners_winered"
             android:elevation="12dp"
             android:text="ルール説明"
             android:textColor="@color/WHITE" />

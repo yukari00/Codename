@@ -68,7 +68,7 @@
         android:layout_marginStart="8dp"
         android:layout_marginEnd="8dp"
         android:layout_marginBottom="12dp"
-        android:background="@color/GRAY"
+        android:background="@drawable/shape_round_corners_navy"
         android:text="決定"
         android:textColor="@color/WHITE"
         app:layout_constraintBottom_toBottomOf="parent"

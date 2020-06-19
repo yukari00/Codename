@@ -50,10 +50,11 @@ class GameSettingFragment : Fragment() {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
 
+        btn_prepared.isEnabled = false
+
         update()
         btn_prepared.setOnClickListener {
             soundPool?.play2(soundIdButtonClicked)
-
             listener?.GameStart()
             getFragmentManager()?.beginTransaction()?.remove(this)?.commit()
         }
@@ -152,7 +153,6 @@ class GameSettingFragment : Fragment() {
             }else getTwoTeamInfoFromFirestore()
         }
 
-
 }
 
     private fun getTwoTeamInfoFromFirestore() {
@@ -167,7 +167,6 @@ class GameSettingFragment : Fragment() {
                 }
 
                 pickBlueteam(teamRed)
-                //Creatorがチームを作っている間にロード中ができたらいい（チーム編成が終わったらメンバーの画面が表示される）
 
             }
     }
@@ -248,6 +247,8 @@ class GameSettingFragment : Fragment() {
                         }
                     }
                 }
+
+                btn_prepared.isEnabled = true
             }
     }
 

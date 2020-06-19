@@ -27,6 +27,9 @@ var soundPool: SoundPool? = null
 var soundIdCorrect = 0
 var soundIdIncorrect = 0
 var soundIdButtonClicked = 0
+var soundIdWinner = 0
+var soundIdLoser = 0
+var soundIdShock = 0
 
 enum class Turn{
     RED_TEAM_TURN,

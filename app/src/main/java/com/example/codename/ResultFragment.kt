@@ -10,7 +10,7 @@ import com.google.common.graph.ImmutableNetwork
 import kotlinx.android.synthetic.main.fragment_result.*
 
 class ResultFragment : Fragment() {
-    // TODO: Rename and change types of parameters
+
     private var reason: String = ""
     private var turnCount: Int = 0
     private var team: Team? = null
@@ -52,15 +52,27 @@ class ResultFragment : Fragment() {
         when(reason){
             "RED" -> {
                 when(isMyTeam){
-                    Team.RED -> text_result.setText("赤チームの勝ちです")
-                    Team.BLUE -> text_result.setText("青チームの負けです")
+                    Team.RED -> {
+                        text_result.setText("赤チームの勝ちです")
+                        soundPool?.play2(soundIdWinner)
+                    }
+                    Team.BLUE -> {
+                        text_result.setText("青チームの負けです")
+                        soundPool?.play2(soundIdLoser)
+                    }
                 }
 
             }
             "BLUE" -> {
                 when(isMyTeam){
-                    Team.RED -> text_result.setText("赤チームの負けです")
-                    Team.BLUE -> text_result.setText("青チームの勝ちです")
+                    Team.RED -> {
+                        text_result.setText("赤チームの負けです")
+                        soundPool?.play2(soundIdLoser)
+                    }
+                    Team.BLUE -> {
+                        text_result.setText("青チームの勝ちです")
+                        soundPool?.play2(soundIdWinner)
+                    }
                 }
 
             }
@@ -68,14 +80,26 @@ class ResultFragment : Fragment() {
                 when(team){
                     Team.RED -> {
                         when(isMyTeam){
-                            Team.RED -> text_result.setText("赤チームの負けです")
-                            Team.BLUE -> text_result.setText("青チームの勝ちです")
+                            Team.RED -> {
+                                text_result.setText("赤チームの負けです")
+                                soundPool?.play2(soundIdShock)
+                            }
+                            Team.BLUE -> {
+                                text_result.setText("青チームの勝ちです")
+                                soundPool?.play2(soundIdWinner)
+                            }
                         }
                     }
                     Team.BLUE -> {
                         when(isMyTeam){
-                            Team.RED -> text_result.setText("赤チームの勝ちです")
-                            Team.BLUE -> text_result.setText("青チームの負けです")
+                            Team.RED -> {
+                                text_result.setText("赤チームの勝ちです")
+                                soundPool?.play2(soundIdWinner)
+                            }
+                            Team.BLUE -> {
+                                text_result.setText("青チームの負けです")
+                                soundPool?.play2(soundIdShock)
+                            }
                         }
                     }
                 }

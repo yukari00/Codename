@@ -40,7 +40,7 @@
             android:layout_height="match_parent"
             android:layout_weight="2"
             android:layout_marginEnd="6dp"
-            android:background="@color/GRAY"
+            android:background="@drawable/shape_round_corners_navy"
             android:text="同じチームでもう一度"
             android:textColor="@color/WHITE"/>
 
@@ -50,7 +50,7 @@
             android:layout_height="match_parent"
             android:layout_weight="2"
             android:layout_marginEnd="6dp"
-            android:background="@color/GRAY"
+            android:background="@drawable/shape_round_corners_navy"
             android:text="ゲーム設定に戻る"
             android:textColor="@color/WHITE"/>
 
