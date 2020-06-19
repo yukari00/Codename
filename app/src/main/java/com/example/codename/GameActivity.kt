@@ -159,7 +159,6 @@ class GameActivity : AppCompatActivity(), OnFragmentListener{
             turnCountList.add(tCount)
         }
         turnCount = turnCountList.max()?: return
-        Log.d("turnCount", "$turnCount")
 
         when (turnCount % 2) {
             0 -> {
@@ -196,9 +195,6 @@ class GameActivity : AppCompatActivity(), OnFragmentListener{
         red_number_of_remaining.setText("${8 - NumRedCard}")
         blue_number_of_remaining.setText("${7 - NumBlueCard}")
 
-        Log.d("NumRedCard", "$NumRedCard")
-        Log.d("NumBlueCard", "$NumBlueCard")
-
         if (NumRedCard == 8) supportFragmentManager.beginTransaction()
                 .replace(R.id.container_game, ResultFragment.newInstance("RED", turnCount, null)).commit()
 
@@ -212,9 +208,6 @@ class GameActivity : AppCompatActivity(), OnFragmentListener{
                 selectedCardList.add(WordsData(cardsHash[j]["word"], cardsHash[j]["color"]))
             }
         }
-
-        Log.d("query.documents.size", "${query.documents.size}")
-        Log.d("selectedCardList", "$selectedCardList")
     }
 
     private fun waitUntilAllVote(redCardIndex: MutableList<Int>, blueCardIndex: MutableList<Int>, workDataList: MutableList<WordsData>) {
@@ -238,10 +231,6 @@ class GameActivity : AppCompatActivity(), OnFragmentListener{
                     }
                     players.add(document.getString("name")!!)
                 }
-
-                Log.d("players", "$players")
-                Log.d("voteItemList", "$voteItemList")
-
                 resultOfVote(voteItemList, workDataList)
             }
     }

@@ -22,8 +22,6 @@ class GameSettingFragment : Fragment() {
     private var keyword: String = ""
     private var nickname: String = ""
 
-    private var isPrepared: Boolean? = false
-
     private val database = FirebaseFirestore.getInstance()
 
     private var listener: OnFragmentListener? = null
@@ -185,10 +183,6 @@ class GameSettingFragment : Fragment() {
                     teamBlue.add(document.getString("name")!!)
                 }
 
-                Log.d("チーム赤", "$teamRed")
-                Log.d("チーム青", "$teamBlue")
-
-                Log.d("チーム赤", "${teamRed.size}")
                 text_red_mem_num.setText("赤チームの人数は${teamRed.size}人です")
                 text_blue_mem_num.setText("青チームの人数は${teamBlue.size}人です")
 
@@ -336,9 +330,6 @@ class GameSettingFragment : Fragment() {
             soundPool?.play2(soundIdButtonClicked)
 
             if(host == nickname) isHost = true
-            Log.d("MEMBER", "$isHost")
-            Log.d("nickname", nickname)
-            Log.d("HOST", host)
 
             val newHost = Member(host, isMyTeam, isHost = true)
 
