@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/design_default_color_secondary_variant"
+    android:background="@drawable/shape_round_corners"
     tools:context=".GameSettingFragment">
 
     <TextView
@@ -13,6 +13,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
         android:text="あなたは赤チームです"
+        android:textColor="@color/WHITE"
         android:gravity="center"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -23,7 +24,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
-        android:text="あなたはリーダーです"
+        android:text="あなたはスパイマスターです"
+        android:textColor="@color/WHITE"
         android:gravity="center"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -49,12 +51,14 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="あなたの仲間は..."
+            android:textColor="@color/WHITE"
             android:gravity="center"/>
 
         <TextView
             android:id="@+id/text_my_team_members"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:textColor="@color/WHITE"
             android:gravity="center"/>
     </LinearLayout>
 
@@ -64,7 +68,7 @@
         android:layout_height="wrap_content"
         android:layout_margin="16dp"
         android:orientation="horizontal"
-        app:layout_constraintBottom_toTopOf="@+id/btn_prepared"
+        app:layout_constraintBottom_toTopOf="@+id/liner_btn"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/linear" >
@@ -73,50 +77,74 @@
             android:id="@+id/textView2"
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight="3"
+            android:layout_weight="4"
             android:gravity="center"
-            android:text="リーダーを変更しますか" />
+            android:text="スパイマスターを変更しますか"
+            android:textColor="@color/WHITE"/>
 
         <Spinner
             android:id="@+id/spinner"
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight="2" />
+            android:layout_weight="3" />
 
         <Button
             android:id="@+id/btn_change_leader"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="変更" />
+            android:background="@drawable/ic_baseline_cached_24"/>
 
     </LinearLayout>
 
     <Button
         android:id="@+id/btn_leave_room"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="退出する"
-        android:textSize="14sp"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:layout_margin="12dp"
+        android:background="@drawable/ic_baseline_arrow_back_24"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"/>
 
-
-    <Button
-        android:id="@+id/btn_team_random"
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:id="@+id/liner_btn"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="ランダム"
+        android:orientation="horizontal"
+        android:layout_margin="12dp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
 
-    <Button
-        android:id="@+id/btn_prepared"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="準備完了"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        <Button
+            android:id="@+id/btn_team_random"
+            android:layout_width="0dp"
+            android:layout_height="30dp"
+            android:layout_marginEnd="6dp"
+            android:layout_weight="1"
+            android:background="@color/WINE_RED"
+            android:text="ランダム"
+            android:textColor="@color/WHITE"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <Button
+            android:id="@+id/btn_prepared"
+            android:layout_width="0dp"
+            android:layout_height="30dp"
+            android:layout_weight="1"
+            android:layout_marginStart="6dp"
+            android:background="@color/WINE_RED"
+            android:text="準備完了"
+            android:textColor="@color/WHITE"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+    </LinearLayout>
+
+
+
+
 
     <TextView
         android:id="@+id/text_red_mem_num"
@@ -125,6 +153,7 @@
         android:layout_marginTop="16dp"
         android:layout_marginEnd="16dp"
         android:text="赤チーム人数"
+        android:textColor="@color/WHITE"
         android:textSize="12dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
@@ -136,6 +165,7 @@
         android:layout_marginTop="8dp"
         android:layout_marginEnd="16dp"
         android:text="青チーム人数"
+        android:textColor="@color/WHITE"
         android:textSize="12dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@id/text_red_mem_num" />

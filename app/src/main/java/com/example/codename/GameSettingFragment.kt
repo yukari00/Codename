@@ -227,10 +227,10 @@ class GameSettingFragment : Fragment() {
 
                 var host: String? = ""
                 if (it.isEmpty) {
-                    text_if_leader.setText("話し合いでチームリーダを決めてください")
+                    text_if_leader.setText("話し合いでスパイマスターを決めてください")
                     btn_prepared?.isEnabled = false
                 } else {
-                    //if(btn_prepared == null) return@addSnapshotListener //Todo なぜかbtn_preparedがnullになる
+
                     btn_prepared?.isEnabled = it.size() == 2
 
                     for (document in it) {
@@ -241,15 +241,15 @@ class GameSettingFragment : Fragment() {
                     }
                     isHost = when (host) {
                         nickname -> {
-                            text_if_leader.setText("あなたはリーダーです")
+                            text_if_leader.setText("あなたはスパイマスターです")
                             true
                         }
                         "" -> {
-                            text_if_leader.setText("話し合いでチームリーダを決めてください")
+                            text_if_leader.setText("話し合いでスパイマスターを決めてください")
                             false
                         }
                         else -> {
-                            text_if_leader.setText("あなたのチームのリーダーは${host}です")
+                            text_if_leader.setText("あなたのチームのスパイマスターは${host}です")
                             false
                         }
                     }

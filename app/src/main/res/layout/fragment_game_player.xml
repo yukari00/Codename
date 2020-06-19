@@ -12,6 +12,7 @@
         android:layout_height="wrap_content"
         android:text="プレイヤーの皆さんは話し合ってカードを選んでください"
         android:textSize="10sp"
+        android:textColor="@color/WHITE"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
@@ -31,6 +32,7 @@
             android:layout_height="wrap_content"
             android:gravity="start"
             android:text="ヒントは..."
+            android:textColor="@color/WHITE"
             android:textSize="10sp" />
 
         <TextView
@@ -39,6 +41,7 @@
             android:layout_height="wrap_content"
             android:gravity="center"
             android:text="遊ぶ"
+            android:textColor="@color/WHITE"
             android:textSize="10sp" />
 
     </LinearLayout>
@@ -58,6 +61,7 @@
             android:layout_height="wrap_content"
             android:gravity="start"
             android:text="選ぶカード枚数は..."
+            android:textColor="@color/WHITE"
             android:textSize="10sp" />
 
         <TextView
@@ -66,6 +70,7 @@
             android:layout_height="wrap_content"
             android:gravity="center"
             android:text="1"
+            android:textColor="@color/WHITE"
             android:textSize="10sp" />
 
     </LinearLayout>
@@ -77,6 +82,7 @@
         android:layout_margin="8dp"
         android:text="投票を行います。カードをクリックしてください"
         android:textSize="10sp"
+        android:textColor="@color/WHITE"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/liner_number" />
@@ -89,6 +95,7 @@
         android:gravity="center"
         tools:text="がんばれ"
         android:textSize="10dp"
+        android:textColor="@color/WHITE"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/text3"
@@ -97,8 +104,13 @@
     <Button
         android:id="@+id/btn_vote"
         android:layout_width="match_parent"
-        android:layout_height="40dp"
+        android:layout_height="30dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="12dp"
+        android:background="@color/GRAY"
         android:text="投票する"
+        android:textColor="@color/WHITE"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
