@@ -29,8 +29,6 @@ class GameSettingFragment : Fragment() {
 
     private var membersList: MutableList<String> = mutableListOf()
 
-    private lateinit var listeningUpdate: ListenerRegistration
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let {
@@ -50,7 +48,13 @@ class GameSettingFragment : Fragment() {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
 
-        btn_prepared.isEnabled = false
+        when(status){
+            Status.JOIN_ROOM -> {
+                btn_team_random.visibility = View.INVISIBLE
+                btn_prepared.visibility = View.INVISIBLE
+            }
+            Status.CREATE_ROOM -> btn_prepared.isEnabled = false
+        }
 
         update()
         btn_prepared.setOnClickListener {
@@ -124,18 +128,15 @@ class GameSettingFragment : Fragment() {
         super.onDetach()
         listener = null
         adapter.clear()
-        listeningUpdate.remove()
     }
 
     private fun update() {
 
-        listeningUpdate = database.collection(dbCollection).document(keyword).collection("members").addSnapshotListener { it, e->
+        database.collection(dbCollection).document(keyword).collection("members").get().addOnSuccessListener {
 
             val membersListUpdate: MutableList<String> = mutableListOf()
 
-            if(e != null) return@addSnapshotListener
-
-            if(it == null || it.isEmpty) return@addSnapshotListener
+            if(it == null || it.isEmpty) return@addOnSuccessListener
             for (document in it) {
                 if(document.getString("member").isNullOrEmpty()){
                     membersListUpdate.add(document.getString("name")!!)
@@ -248,7 +249,7 @@ class GameSettingFragment : Fragment() {
                     }
                 }
 
-                btn_prepared.isEnabled = true
+                if(status == Status.CREATE_ROOM)btn_prepared.isEnabled = true
             }
     }
 

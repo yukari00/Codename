@@ -14,14 +14,15 @@ import kotlinx.android.synthetic.main.fragment_waiting_members.*
 
 
 class WaitingMembersFragment : Fragment() {
-    // TODO: Rename and change types of parameters
+
     private var keyword: String = ""
     private var nickname: String = ""
 
     var listener: OnFragmentListener? = null
     val database = FirebaseFirestore.getInstance()
 
-    lateinit var listening: ListenerRegistration
+    var listeningMembers: ListenerRegistration? = null
+    var listeningReadySign: ListenerRegistration? = null
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -35,6 +36,9 @@ class WaitingMembersFragment : Fragment() {
     override fun onDetach() {
         super.onDetach()
         listener = null
+        listeningMembers?.remove()
+        listeningReadySign?.remove()
+
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -56,7 +60,7 @@ class WaitingMembersFragment : Fragment() {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
 
-        listening = database.collection(dbCollection).document(keyword).collection("members").addSnapshotListener { it, e ->
+        listeningMembers = database.collection(dbCollection).document(keyword).collection("members").addSnapshotListener { it, e ->
             val memberList: MutableList<String> = mutableListOf()
 
             if (e != null) return@addSnapshotListener
@@ -73,11 +77,14 @@ class WaitingMembersFragment : Fragment() {
             text_member_join.setText(memberList.joinToString())
             text_member_join_num.setText("現在参加人数は${memberList.size}人です")
 
-            btn_game_start.isEnabled = memberList.size >= 4
+            when(status){
+                Status.JOIN_ROOM -> btn_game_start.visibility = View.INVISIBLE
+                Status.CREATE_ROOM -> btn_game_start.isEnabled = memberList.size >= 4
+            }
 
             btn_game_start.setOnClickListener {
                 soundPool?.play2(soundIdButtonClicked)
-                listener?.OnMembersGathered()
+                database.collection(dbCollection).document(keyword).update("readyForGameSetting", true)
             }
 
             btn_go_back.setOnClickListener {
@@ -88,12 +95,22 @@ class WaitingMembersFragment : Fragment() {
                 }
 
             }
+
+            onListeningReadySign()
+
         }
     }
 
-    override fun onPause() {
-        super.onPause()
-        listening.remove()
+    private fun onListeningReadySign() {
+        listeningReadySign =
+            database.collection(dbCollection).document(keyword).addSnapshotListener { it, e ->
+
+                if (e != null) return@addSnapshotListener
+                if (it == null || it["readyForGameSetting"] == null) return@addSnapshotListener
+
+                val ready = it.getBoolean("readyForGameSetting") ?: return@addSnapshotListener
+                if (ready) listener?.OnMembersGathered()
+            }
     }
 
     private fun deleteMemberInfo() {

@@ -111,6 +111,7 @@ class SetRoomInfoFragment : Fragment() {
                         }
                         Status.JOIN_ROOM -> {
                             joinRoom(nickname, keyword)
+                            if(nickname == "yukari") status = Status.CREATE_ROOM
                             startActivity(GameActivity.getLaunched(activity, keyword, nickname))
                         }
                     }
