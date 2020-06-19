@@ -67,6 +67,7 @@ class GameActivity : AppCompatActivity(), OnFragmentListener{
         listeningWords = database.collection(dbCollection).document(keyword).collection("words").document(keyword)
             .addSnapshotListener { it, e ->
 
+
                 Log.d("Check!!!!!!!!!!!!", "Check!!!!!!!!!!!!")
                 if (e != null) return@addSnapshotListener
                 if (it == null || !it.exists()) return@addSnapshotListener
@@ -101,9 +102,6 @@ class GameActivity : AppCompatActivity(), OnFragmentListener{
                         willUpdate(query, selectedCardList)
                     }
 
-                    val redCardIndex = mutableListOf<Int>()
-                    val blueCardIndex = mutableListOf<Int>()
-
                     newTurn()
 
                     val listItem = mutableListOf<String>()
@@ -111,7 +109,7 @@ class GameActivity : AppCompatActivity(), OnFragmentListener{
                     val adapter = CardAdapter(wordsDataList, selectedCardList, object : CardAdapter.OnCardAdapterListener {
                         override fun OnClickCard(word: String, wordsData: WordsData, holder: CardAdapter.ViewHolder) {
 
-                            showWhatYouClicked(listItem, word, redCardIndex, blueCardIndex, wordsDataList)
+                            showWhatYouClicked(listItem, word, wordsDataList)
                         }
                     })
                     recycler_view.layoutManager = GridLayoutManager(this, 5)
@@ -120,8 +118,7 @@ class GameActivity : AppCompatActivity(), OnFragmentListener{
             }
     }
 
-    private fun showWhatYouClicked(listItem: MutableList<String>, word: String, redCardIndex: MutableList<Int>,
-                                   blueCardIndex: MutableList<Int>, wordsDataList: MutableList<WordsData>) {
+    private fun showWhatYouClicked(listItem: MutableList<String>, word: String, wordsDataList: MutableList<WordsData>) {
 
         val myTeam = if(isMyTeam == Team.RED) "RED" else "BLUE"
         database.collection(dbCollection).document(keyword).collection("words").document(myTeam).get().addOnSuccessListener{
@@ -184,8 +181,9 @@ class GameActivity : AppCompatActivity(), OnFragmentListener{
                     "BLUE" -> NumBlueCard++
                     "GRAY" -> {
                         val teamGotGray = if(turnCount % 2 == 0) Team.BLUE else Team.RED
+                        deletePreviousReadySign()
                         supportFragmentManager.beginTransaction()
-                            .replace(R.id.container_game, ResultFragment.newInstance("GRAY", turnCount,teamGotGray)).commit()
+                            .replace(R.id.container_game, ResultFragment.newInstance(keyword, "GRAY", turnCount,teamGotGray)).commit()
                     }
                 }
             }
@@ -195,11 +193,17 @@ class GameActivity : AppCompatActivity(), OnFragmentListener{
         red_number_of_remaining.setText("${8 - NumRedCard}")
         blue_number_of_remaining.setText("${7 - NumBlueCard}")
 
-        if (NumRedCard == 8) supportFragmentManager.beginTransaction()
-                .replace(R.id.container_game, ResultFragment.newInstance("RED", turnCount, null)).commit()
+        if (NumRedCard == 8) {
+            deletePreviousReadySign()
+            supportFragmentManager.beginTransaction()
+                .replace(R.id.container_game, ResultFragment.newInstance(keyword, "RED", turnCount, null)).commit()
+        }
 
-        if (NumBlueCard == 7) supportFragmentManager.beginTransaction()
-            .replace(R.id.container_game, ResultFragment.newInstance("BLUE", turnCount, null)).commit()
+        if (NumBlueCard == 7) {
+            deletePreviousReadySign()
+            supportFragmentManager.beginTransaction()
+                .replace(R.id.container_game, ResultFragment.newInstance(keyword, "BLUE", turnCount, null)).commit()
+        }
 
         for(i in 0 until query.documents.size){
             val cardsHash = query.documents[i]["clickedWords"] as MutableList<HashMap<String, String>>? ?: return
@@ -456,6 +460,10 @@ class GameActivity : AppCompatActivity(), OnFragmentListener{
         listeningSelectedCards?.remove()
         listeningMembers?.remove()
 
+        val deleteReadySign = hashMapOf<String, Any>(
+            "readyForGame" to FieldValue.delete()
+        )
+        database.collection(dbCollection).document(keyword).update(deleteReadySign)
         database.collection(dbCollection).document(keyword).collection("selectedCards").get().addOnSuccessListener {
             for( i in 0 until it.documents.size){
                 val documentId = it.documents[i].id
@@ -476,6 +484,26 @@ class GameActivity : AppCompatActivity(), OnFragmentListener{
                 .replace(R.id.container_game, GameSettingFragment.newInstance(keyword, nickname))
                 .commit()
         }
+    }
+
+    private fun deletePreviousReadySign() {
+
+        val delete1 = hashMapOf<String, Any>(
+            "readyForGame" to FieldValue.delete()
+        )
+        val delete2 = hashMapOf<String, Any>(
+            "readyForGameSetting" to FieldValue.delete()
+        )
+        val delete3 = hashMapOf<String, Any>(
+            "readyToEndGame" to FieldValue.delete()
+        )
+        val delete4 = hashMapOf<String, Any>(
+            "readyForAnotherGame" to FieldValue.delete()
+        )
+        database.collection(dbCollection).document(keyword).update(delete1)
+        database.collection(dbCollection).document(keyword).update(delete2)
+        database.collection(dbCollection).document(keyword).update(delete3)
+        database.collection(dbCollection).document(keyword).update(delete4)
     }
 
     private fun importWordsFromCSV() {

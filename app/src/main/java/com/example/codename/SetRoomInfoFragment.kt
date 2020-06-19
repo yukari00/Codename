@@ -90,7 +90,7 @@ class SetRoomInfoFragment : Fragment() {
     }
 
     private fun ifKeywordAlreadyExist(keyword: String, nickname: String) {
-        //キーワードが既に存在していないチェック
+
         database.collection(dbCollection).whereEqualTo("keyword", keyword).get()
             .addOnSuccessListener {
                 if (it.isEmpty) {

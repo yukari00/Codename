@@ -25,9 +25,12 @@ class GameSettingFragment : Fragment() {
     private val database = FirebaseFirestore.getInstance()
 
     private var listener: OnFragmentListener? = null
-    private lateinit var adapter: ArrayAdapter<String>
+    var adapter: ArrayAdapter<String>? = null
 
     private var membersList: MutableList<String> = mutableListOf()
+
+    var listeningMembers: ListenerRegistration? = null
+    var listeningReadySign: ListenerRegistration? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -59,12 +62,11 @@ class GameSettingFragment : Fragment() {
         update()
         btn_prepared.setOnClickListener {
             soundPool?.play2(soundIdButtonClicked)
-            listener?.GameStart()
-            getFragmentManager()?.beginTransaction()?.remove(this)?.commit()
+            database.collection(dbCollection).document(keyword).update("readyForGame", true)
         }
 
         btn_team_random.setOnClickListener {
-            //ランダムにチーム再編成
+
             splitMembersToTwoTeam(membersList)
         }
 
@@ -127,7 +129,9 @@ class GameSettingFragment : Fragment() {
     override fun onDetach() {
         super.onDetach()
         listener = null
-        adapter.clear()
+        adapter?.clear()
+        listeningMembers?.remove()
+        listeningReadySign?.remove()
     }
 
     private fun update() {
@@ -144,7 +148,6 @@ class GameSettingFragment : Fragment() {
                     membersListUpdate.add(document.getString("member")!!)
                 }
             }
-
             membersList = membersListUpdate
 
             if (status == Status.CREATE_ROOM) {
@@ -158,18 +161,18 @@ class GameSettingFragment : Fragment() {
 
     private fun getTwoTeamInfoFromFirestore() {
 
-       database.collection(dbCollection).document(keyword).collection("members")
-            .whereEqualTo("team", "RED").get().addOnSuccessListener {
-                val teamRed: MutableList<String> = mutableListOf()
+       listeningMembers = database.collection(dbCollection).document(keyword).collection("members")
+            .whereEqualTo("team", "RED").addSnapshotListener { it, e ->
+               val teamRed: MutableList<String> = mutableListOf()
 
-                if(it == null || it.isEmpty) return@addOnSuccessListener
-                for (document in it) {
-                    teamRed.add(document.getString("name")!!)
-                }
+               if(e != null) return@addSnapshotListener
+               if(it == null || it.isEmpty) return@addSnapshotListener
+               for (document in it) {
+                   teamRed.add(document.getString("name")!!)
+               }
 
-                pickBlueteam(teamRed)
-
-            }
+               pickBlueteam(teamRed)
+           }
     }
 
     private fun pickBlueteam(teamRed: MutableList<String>) {
@@ -217,15 +220,16 @@ class GameSettingFragment : Fragment() {
         database.collection(dbCollection).document(keyword).collection("members")
             .whereEqualTo("host", true).get().addOnSuccessListener {
 
+                var numberOfHost = 0
                 if (it == null) return@addOnSuccessListener
 
                 var host: String? = ""
                 if (it.isEmpty) {
                     text_if_leader.setText("話し合いでスパイマスターを決めてください")
-                    btn_prepared?.isEnabled = false
+
                 } else {
 
-                    btn_prepared?.isEnabled = it.size() == 2
+                    numberOfHost = it.size()
 
                     for (document in it) {
                         if (document.getString("team") == myTeam) {
@@ -249,7 +253,23 @@ class GameSettingFragment : Fragment() {
                     }
                 }
 
-                if(status == Status.CREATE_ROOM)btn_prepared.isEnabled = true
+                if(status == Status.CREATE_ROOM){
+                    if(numberOfHost == 2){
+                        btn_prepared.isEnabled = true
+                    }
+                }
+
+                listeningReadySign = database.collection(dbCollection).document(keyword).addSnapshotListener { it, e ->
+
+                    if (e != null) return@addSnapshotListener
+                    if (it == null || it["readyForGame"] == null) return@addSnapshotListener
+
+                    val ready = it.getBoolean("readyForGame") ?: return@addSnapshotListener
+                    if (ready) {
+                        listener?.GameStart()
+                        getFragmentManager()?.beginTransaction()?.remove(this)?.commit()
+                    }
+                }
             }
     }
 
@@ -284,9 +304,7 @@ class GameSettingFragment : Fragment() {
         text_red_mem_num.setText("赤チームの人数は${teamRed.size}人です")
         text_blue_mem_num.setText("青チームの人数は${teamBlue.size}人です")
 
-        setSpinner(teamRed, teamBlue)
-        individualsInfo(teamRed, teamBlue)
-
+        getTwoTeamInfoFromFirestore()
     }
 
     private fun setSpinner(teamRed: MutableList<String>, teamBlue: MutableList<String>) {
@@ -306,7 +324,7 @@ class GameSettingFragment : Fragment() {
                     teamBlue
                 )
             }
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        adapter?.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         spinner.adapter = adapter
         spinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onNothingSelected(parent: AdapterView<*>?) {

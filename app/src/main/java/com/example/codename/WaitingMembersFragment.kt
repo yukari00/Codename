@@ -109,7 +109,10 @@ class WaitingMembersFragment : Fragment() {
                 if (it == null || it["readyForGameSetting"] == null) return@addSnapshotListener
 
                 val ready = it.getBoolean("readyForGameSetting") ?: return@addSnapshotListener
-                if (ready) listener?.OnMembersGathered()
+                if (ready) {
+                    listener?.OnMembersGathered()
+                    getFragmentManager()?.beginTransaction()?.remove(this)?.commit()
+                }
             }
     }
 
