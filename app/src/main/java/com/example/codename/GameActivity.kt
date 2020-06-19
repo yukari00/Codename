@@ -442,6 +442,8 @@ class GameActivity : AppCompatActivity(), OnFragmentListener{
         membersList.forEach {
             database.collection(dbCollection).document(keyword).collection("members").document(it).delete()
         }
+        database.collection(dbCollection).document(keyword).collection("words").document("RED").delete()
+        database.collection(dbCollection).document(keyword).collection("words").document("BLUE").delete()
         database.collection(dbCollection).document(keyword).collection("words").document(keyword).delete()
         database.collection(dbCollection).document(keyword).delete()
         finish()

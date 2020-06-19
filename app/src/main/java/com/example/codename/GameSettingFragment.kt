@@ -303,10 +303,10 @@ class GameSettingFragment : Fragment() {
 
         adapter=
             when (isMyTeam) {
-                Team.RED -> ArrayAdapter(activity!!, android.R.layout.simple_spinner_item, teamRed)
+                Team.RED -> ArrayAdapter(activity!!, R.layout.spiner_item, teamRed)
                 Team.BLUE -> ArrayAdapter(
                     activity!!,
-                    android.R.layout.simple_spinner_item,
+                    R.layout.spiner_item,
                     teamBlue
                 )
             }
