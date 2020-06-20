@@ -34,6 +34,10 @@ class GameActivity : AppCompatActivity(), OnFragmentListener{
     lateinit var turn: Turn
     var turnCount = 0
 
+    var teamToCollectAllCards = ""
+    var teamGotGray: Team? = null
+    var ifGameIsOver = false
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_game)
@@ -66,7 +70,6 @@ class GameActivity : AppCompatActivity(), OnFragmentListener{
 
         listeningWords = database.collection(dbCollection).document(keyword).collection("words").document(keyword)
             .addSnapshotListener { it, e ->
-
 
                 Log.d("Check!!!!!!!!!!!!", "Check!!!!!!!!!!!!")
                 if (e != null) return@addSnapshotListener
@@ -114,8 +117,16 @@ class GameActivity : AppCompatActivity(), OnFragmentListener{
                     })
                     recycler_view.layoutManager = GridLayoutManager(this, 5)
                     recycler_view.adapter = adapter
+
+                    if(ifGameIsOver) showResultFragment()
                 }
             }
+    }
+
+    private fun showResultFragment() {
+        deletePreviousReadySign()
+        supportFragmentManager.beginTransaction()
+           .replace(R.id.container_game, ResultFragment.newInstance(keyword, teamToCollectAllCards, turnCount,teamGotGray)).commit()
     }
 
     private fun showWhatYouClicked(listItem: MutableList<String>, word: String, wordsDataList: MutableList<WordsData>) {
@@ -180,10 +191,9 @@ class GameActivity : AppCompatActivity(), OnFragmentListener{
                     "RED" -> NumRedCard++
                     "BLUE" -> NumBlueCard++
                     "GRAY" -> {
-                        val teamGotGray = if(turnCount % 2 == 0) Team.BLUE else Team.RED
-                        deletePreviousReadySign()
-                        supportFragmentManager.beginTransaction()
-                            .replace(R.id.container_game, ResultFragment.newInstance(keyword, "GRAY", turnCount,teamGotGray)).commit()
+                        teamGotGray = if(turnCount % 2 == 0) Team.BLUE else Team.RED
+                        teamToCollectAllCards = "GRAY"
+                        ifGameIsOver = true
                     }
                 }
             }
@@ -194,15 +204,13 @@ class GameActivity : AppCompatActivity(), OnFragmentListener{
         blue_number_of_remaining.setText("${7 - NumBlueCard}")
 
         if (NumRedCard == 8) {
-            deletePreviousReadySign()
-            supportFragmentManager.beginTransaction()
-                .replace(R.id.container_game, ResultFragment.newInstance(keyword, "RED", turnCount, null)).commit()
+            teamToCollectAllCards = "RED"
+            ifGameIsOver = true
         }
 
         if (NumBlueCard == 7) {
-            deletePreviousReadySign()
-            supportFragmentManager.beginTransaction()
-                .replace(R.id.container_game, ResultFragment.newInstance(keyword, "BLUE", turnCount, null)).commit()
+            teamToCollectAllCards = "BLUE"
+            ifGameIsOver = true
         }
 
         for(i in 0 until query.documents.size){
@@ -443,6 +451,10 @@ class GameActivity : AppCompatActivity(), OnFragmentListener{
 
     override fun OnStartAnotherGame(turnCount: Int) {
 
+        teamToCollectAllCards = ""
+        teamGotGray = null
+        ifGameIsOver = false
+
         database.collection(dbCollection).document(keyword).collection("selectedCards").get()
             .addOnSuccessListener {
                 for (i in 0 until it.documents.size) {
@@ -456,14 +468,17 @@ class GameActivity : AppCompatActivity(), OnFragmentListener{
 
     override fun OnGoBackOnGameSettingFragment() {
 
-        listeningWords?.remove()
         listeningSelectedCards?.remove()
         listeningMembers?.remove()
 
-        val deleteReadySign = hashMapOf<String, Any>(
-            "readyForGame" to FieldValue.delete()
-        )
-        database.collection(dbCollection).document(keyword).update(deleteReadySign)
+        Log.d("listeningWords","$listeningWords")
+        Log.d("listeningSelectedCards", "$listeningSelectedCards")
+        Log.d("listeningMembers", "$listeningMembers")
+
+        teamToCollectAllCards = ""
+        teamGotGray = null
+        ifGameIsOver = false
+
         database.collection(dbCollection).document(keyword).collection("selectedCards").get().addOnSuccessListener {
             for( i in 0 until it.documents.size){
                 val documentId = it.documents[i].id
