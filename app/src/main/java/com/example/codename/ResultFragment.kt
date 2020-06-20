@@ -141,6 +141,7 @@ class ResultFragment : Fragment() {
             if(endGame){
                 listener?.OnGoBackOnGameSettingFragment()
                 getFragmentManager()?.beginTransaction()?.remove(this)?.commit()
+                return@addSnapshotListener
             }
 
             val tryAnotherGame = it.getBoolean("readyForAnotherGame")?: false
@@ -148,6 +149,7 @@ class ResultFragment : Fragment() {
             if(tryAnotherGame){
                 listener?.OnStartAnotherGame(turnCount)
                 getFragmentManager()?.beginTransaction()?.remove(this)?.commit()
+                return@addSnapshotListener
             }
 
         }

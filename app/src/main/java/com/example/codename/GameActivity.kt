@@ -389,12 +389,6 @@ class GameActivity : AppCompatActivity(), OnFragmentListener{
         }
     }
 
-    override fun onPause() {
-        super.onPause()
-
-        if( listeningWords != null ) listeningWords?.remove()
-    }
-
     companion object {
 
         const val INTENT_KEY_KEYWORD = "keyword"
@@ -471,7 +465,8 @@ class GameActivity : AppCompatActivity(), OnFragmentListener{
         listeningSelectedCards?.remove()
         listeningMembers?.remove()
 
-        Log.d("listeningWords","$listeningWords")
+
+        Log.d("listeningWords","${listeningWords}")
         Log.d("listeningSelectedCards", "$listeningSelectedCards")
         Log.d("listeningMembers", "$listeningMembers")
 

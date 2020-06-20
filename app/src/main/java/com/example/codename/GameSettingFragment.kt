@@ -165,6 +165,8 @@ class GameSettingFragment : Fragment() {
             .whereEqualTo("team", "RED").addSnapshotListener { it, e ->
                val teamRed: MutableList<String> = mutableListOf()
 
+               Log.d("!!!!!!!!!!!!", "!!!!!!!!!!!!!!")
+
                if(e != null) return@addSnapshotListener
                if(it == null || it.isEmpty) return@addSnapshotListener
                for (document in it) {
@@ -218,13 +220,13 @@ class GameSettingFragment : Fragment() {
     private fun showHost(myTeam: String) {
 
         database.collection(dbCollection).document(keyword).collection("members")
-            .whereEqualTo("host", true).get().addOnSuccessListener {
+            .whereEqualTo("host", true).addSnapshotListener { it, e ->
+
+                if(e != null) return@addSnapshotListener
 
                 var numberOfHost = 0
-                if (it == null) return@addOnSuccessListener
-
                 var host: String? = ""
-                if (it.isEmpty) {
+                if (it == null || it.isEmpty) {
                     text_if_leader.setText("話し合いでスパイマスターを決めてください")
 
                 } else {
@@ -362,9 +364,6 @@ class GameSettingFragment : Fragment() {
             database.collection(dbCollection).document(keyword).collection("members")
                 .document(host)
                 .set(newHost)
-
-            val myTeamString = if (isMyTeam == Team.RED) "RED" else "BLUE"
-            showHost(myTeamString)
 
         }
     }
