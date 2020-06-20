@@ -16,9 +16,9 @@ import kotlinx.android.synthetic.main.fragment_result.*
 class ResultFragment : Fragment() {
 
     private var keyword: String = ""
-    private var reason: String = ""
+    private var result: String = ""
     private var turnCount: Int = 0
-    private var team: Team? = null
+    private var teamGotGray: Team? = null
     var listener: OnFragmentListener? = null
     val database = FirebaseFirestore.getInstance()
 
@@ -28,9 +28,9 @@ class ResultFragment : Fragment() {
         super.onCreate(savedInstanceState)
         arguments?.let {
             keyword = it.getString(INTENT_KEY_KEYWORD)?: return@let
-            reason = it.getString(INTENT_KEY_REASON)?: return@let
+            result = it.getString(INTENT_KEY_RESULT)?: return@let
             turnCount = it.getInt(INTENT_KEY_TURN_COUNT)
-            team = it.getSerializable(INTENT_KEY_TEAM_GOT_GRAY) as Team?
+            teamGotGray = it.getSerializable(INTENT_KEY_TEAM_GOT_GRAY) as Team?
         }
     }
 
@@ -60,12 +60,14 @@ class ResultFragment : Fragment() {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
 
+        if(teamGotGray != null) result = "GRAY"
+
         if(status == Status.JOIN_ROOM){
             btn_another_game_start.visibility = View.INVISIBLE
             btn_back_game_setting.visibility = View.INVISIBLE
         }
 
-        when(reason){
+        when(result){
             "RED" -> {
                 when(isMyTeam){
                     Team.RED -> {
@@ -93,7 +95,7 @@ class ResultFragment : Fragment() {
 
             }
             "GRAY" -> {
-                when(team){
+                when(teamGotGray){
                     Team.RED -> {
                         when(isMyTeam){
                             Team.RED -> {
@@ -158,17 +160,17 @@ class ResultFragment : Fragment() {
     companion object {
 
         private const val INTENT_KEY_KEYWORD = "INTENT_KEY_KEYWORD"
-        private const val INTENT_KEY_REASON = "INTENT_KEY_REASON"
+        private const val INTENT_KEY_RESULT = "INTENT_KEY_RESULT"
         private const val INTENT_KEY_TURN_COUNT = "INTENT_KEY_TURN_COUNT"
         private const val INTENT_KEY_TEAM_GOT_GRAY = "INTENT_KEY_TEAM_GOT_GRAY"
 
         @JvmStatic
-        fun newInstance(keyword: String, reason: String, turnCount: Int, teamGotGray: Team?) =
+        fun newInstance(keyword: String, result: String, turnCount: Int, teamGotGray: Team?) =
             ResultFragment().apply {
                 arguments = Bundle().apply {
 
                     putString(INTENT_KEY_KEYWORD, keyword)
-                    putString(INTENT_KEY_REASON, reason)
+                    putString(INTENT_KEY_RESULT, result)
                     putInt(INTENT_KEY_TURN_COUNT, turnCount)
                     putSerializable(INTENT_KEY_TEAM_GOT_GRAY, teamGotGray)
                 }

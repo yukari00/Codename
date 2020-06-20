@@ -30,6 +30,7 @@ class GameSettingFragment : Fragment() {
     private var membersList: MutableList<String> = mutableListOf()
 
     var listeningMembers: ListenerRegistration? = null
+    var listeningMembersHost: ListenerRegistration? = null
     var listeningReadySign: ListenerRegistration? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -132,6 +133,7 @@ class GameSettingFragment : Fragment() {
         adapter?.clear()
         listeningMembers?.remove()
         listeningReadySign?.remove()
+        listeningMembersHost?.remove()
     }
 
     private fun update() {
@@ -219,7 +221,7 @@ class GameSettingFragment : Fragment() {
 
     private fun showHost(myTeam: String) {
 
-        database.collection(dbCollection).document(keyword).collection("members")
+       listeningMembersHost =  database.collection(dbCollection).document(keyword).collection("members")
             .whereEqualTo("host", true).addSnapshotListener { it, e ->
 
                 if(e != null) return@addSnapshotListener
@@ -364,7 +366,6 @@ class GameSettingFragment : Fragment() {
             database.collection(dbCollection).document(keyword).collection("members")
                 .document(host)
                 .set(newHost)
-
         }
     }
 

@@ -209,7 +209,12 @@ class GameActivity : AppCompatActivity(), OnFragmentListener{
         }
 
         if (NumBlueCard == 7) {
-            teamToCollectAllCards = "BLUE"
+            when(teamToCollectAllCards){
+                "RED" -> {
+                    if(turnCount % 2 == 1) teamToCollectAllCards = "BLUE"
+                }
+                "" -> teamToCollectAllCards = "BLUE"
+            }
             ifGameIsOver = true
         }
 
@@ -464,11 +469,6 @@ class GameActivity : AppCompatActivity(), OnFragmentListener{
 
         listeningSelectedCards?.remove()
         listeningMembers?.remove()
-
-
-        Log.d("listeningWords","${listeningWords}")
-        Log.d("listeningSelectedCards", "$listeningSelectedCards")
-        Log.d("listeningMembers", "$listeningMembers")
 
         teamToCollectAllCards = ""
         teamGotGray = null
