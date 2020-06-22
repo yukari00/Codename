@@ -28,7 +28,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center"
-            android:hint="ニックネーム"
+            android:hint="@string/nickname"
             android:imeOptions="actionDone|actionNext"
             android:textColor="@color/WHITE" />
     </com.google.android.material.textfield.TextInputLayout>
@@ -52,7 +52,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center"
-            android:hint="キーワード"
+            android:hint="@string/keyword"
             android:imeOptions="actionDone|actionNext"
             android:textColor="@color/WHITE" />
     </com.google.android.material.textfield.TextInputLayout>
@@ -63,7 +63,7 @@
         android:layout_height="30dp"
         android:layout_margin="12dp"
         android:background="@drawable/shape_round_coners_winered"
-        android:text="作成"
+        android:text="@string/create"
         android:textColor="@color/WHITE"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"/>

@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/WHITE">
+    android:background="@drawable/shape_round_corners">
 
     <Button
         android:id="@+id/btn_close_explanation"
@@ -28,6 +28,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/what_is_codename"
+                android:textColor="@color/WHITE"
                 android:textSize="20sp"
                 android:gravity="center"
                 android:layout_margin="12dp"
@@ -40,12 +41,14 @@
                 android:layout_height="wrap_content"
                 android:layout_margin="12dp"
                 android:text="@string/explanation1"
+                android:textColor="@color/WHITE"
                 android:textSize="18sp" />
 
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/number_participants"
+                android:textColor="@color/WHITE"
                 android:textSize="18sp"
                 android:layout_margin="12dp"/>
 
@@ -53,6 +56,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/explanation2"
+                android:textColor="@color/WHITE"
                 android:textSize="18sp"
                 android:layout_margin="12dp"/>
 
@@ -103,6 +107,7 @@
                 android:layout_height="wrap_content"
                 android:layout_margin="12dp"
                 android:text="@string/explanation3"
+                android:textColor="@color/WHITE"
                 android:textSize="18sp" />
 
             <LinearLayout
@@ -121,22 +126,25 @@
 
                         <Button
                             android:id="@+id/button4"
-                            android:layout_width="wrap_content"
+                            android:layout_width="0dp"
                             android:layout_height="wrap_content"
+                            android:layout_weight="1"
                             android:clickable="false"
                             android:text="@string/card1" />
 
                         <Button
                             android:id="@+id/button5"
-                            android:layout_width="wrap_content"
+                            android:layout_width="0dp"
                             android:layout_height="wrap_content"
+                            android:layout_weight="1"
                             android:clickable="false"
                             android:text="@string/card2" />
 
                         <Button
                             android:id="@+id/button6"
-                            android:layout_width="wrap_content"
+                            android:layout_width="0dp"
                             android:layout_height="wrap_content"
+                            android:layout_weight="1"
                             android:clickable="false"
                             android:text="@string/card3" />
                     </TableRow>
@@ -147,22 +155,25 @@
 
                         <Button
                             android:id="@+id/button"
-                            android:layout_width="wrap_content"
+                            android:layout_width="0dp"
                             android:layout_height="wrap_content"
+                            android:layout_weight="1"
                             android:clickable="false"
                             android:text="@string/card4" />
 
                         <Button
                             android:id="@+id/button2"
-                            android:layout_width="wrap_content"
+                            android:layout_width="0dp"
                             android:layout_height="wrap_content"
+                            android:layout_weight="1"
                             android:clickable="false"
                             android:text="@string/card5" />
 
                         <Button
                             android:id="@+id/button3"
-                            android:layout_width="wrap_content"
+                            android:layout_width="0dp"
                             android:layout_height="wrap_content"
+                            android:layout_weight="1"
                             android:clickable="false"
                             android:text="@string/card6" />
                     </TableRow>
@@ -184,6 +195,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/explanation4"
+                android:textColor="@color/WHITE"
                 android:textSize="18sp"
                 android:layout_margin="12dp"/>
 
@@ -203,24 +215,27 @@
 
                     <Button
                         android:id="@+id/button7"
-                        android:layout_width="wrap_content"
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
+                        android:layout_weight="1"
                         android:text="@string/card1"
                         android:clickable="false"
                         android:background="@color/RED"/>
 
                     <Button
                         android:id="@+id/button8"
-                        android:layout_width="wrap_content"
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
+                        android:layout_weight="1"
                         android:text="@string/card2"
                         android:clickable="false"
                         android:background="@color/BLUE"/>
 
                     <Button
                         android:id="@+id/button9"
-                        android:layout_width="wrap_content"
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
+                        android:layout_weight="1"
                         android:text="@string/card3"
                         android:clickable="false"
                         android:background="@color/BLUE"/>
@@ -232,22 +247,25 @@
 
                     <Button
                         android:id="@+id/button10"
-                        android:layout_width="wrap_content"
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
+                        android:layout_weight="1"
                         android:text="@string/card4"
                         android:clickable="false"/>
 
                     <Button
                         android:id="@+id/button11"
-                        android:layout_width="wrap_content"
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
+                        android:layout_weight="1"
                         android:text="@string/card5"
                         android:clickable="false"/>
 
                     <Button
                         android:id="@+id/button12"
-                        android:layout_width="wrap_content"
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
+                        android:layout_weight="1"
                         android:text="@string/card6"
                         android:clickable="false"
                         android:background="@color/RED"/>
@@ -271,12 +289,14 @@
                 android:layout_height="wrap_content"
                 android:layout_margin="12dp"
                 android:text="@string/explanation5"
+                android:textColor="@color/WHITE"
                 android:textSize="18sp" />
 
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/explanation6"
+                android:textColor="@color/WHITE"
                 android:textSize="18sp"
                 android:layout_margin="12dp"/>
 
@@ -309,6 +329,7 @@
                         android:layout_height="0dp"
                         android:layout_weight="1"
                         android:text="@string/hint"
+                        android:textColor="@color/WHITE"
                         android:textSize="14sp"
                         android:gravity="center"/>
 
@@ -317,6 +338,7 @@
                         android:layout_height="0dp"
                         android:layout_weight="1"
                         android:text="@string/required_number_of_card"
+                        android:textColor="@color/WHITE"
                         android:textSize="14sp"
                         android:gravity="center"/>
 
@@ -333,6 +355,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/explanation7"
+                android:textColor="@color/WHITE"
                 android:textSize="18sp"
                 android:layout_margin="12dp"/>
 
@@ -340,6 +363,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/explanation8"
+                android:textColor="@color/WHITE"
                 android:textSize="18sp"
                 android:layout_margin="12dp"/>
 

@@ -33,4 +33,15 @@
     <string name="join_room">ルーム参加</string>
     <string name="explanation">ルール説明</string>
 
+    <!--TypeRoomInfoFragment -->
+    <string name="create">作成する</string>
+    <string name="join">参加する</string>
+    <string name="nickname">ニックネーム</string>
+    <string name="keyword">キーワード</string>
+
+    <!--TypeRoomInfoFragment Error-->
+    <string name="error_please_type_nickname">ニックネームを入力してください。</string>
+    <string name="error_please_type_keyword">キーワードを入力してください。</string>
+    <string name="error_keyword_does_not_exist">そのようなキーワードは存在しません。</string>
+    <string name="error_keyword_cannot_be_used">このキーワードは使用できません。</string>
 </resources>

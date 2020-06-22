@@ -13,20 +13,12 @@ class SetRoomInfoFragment : Fragment() {
 
     val database = FirebaseFirestore.getInstance()
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        arguments?.let {
-
-        }
-
-    }
-
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
 
         when(status){
-            Status.CREATE_ROOM -> btn_go_next.text = "作成する"
-            Status.JOIN_ROOM -> btn_go_next.text = "参加する"
+            Status.CREATE_ROOM -> btn_go_next.text = getString(R.string.create)
+            Status.JOIN_ROOM -> btn_go_next.text = getString(R.string.join)
         }
 
         btn_go_back.setOnClickListener {
@@ -56,7 +48,6 @@ class SetRoomInfoFragment : Fragment() {
 
         database.collection(dbCollection).document(keyword).collection("members").whereEqualTo("name", nickname).get().addOnSuccessListener {
             if(it.isEmpty){
-                Log.d("IF this is Empty", "${it.isEmpty}")
                 val member = hashMapOf("member" to nickname)
                 database.collection(dbCollection).document(keyword).collection("members").document(nickname)
                     .set(member)
@@ -77,12 +68,12 @@ class SetRoomInfoFragment : Fragment() {
     private fun createNickname(nickname: String, keyword: String): Boolean {
 
         if (nickname == "") {
-            input_nickname.error = "ニックネームを入力してください。"
+            input_nickname.error = getString(R.string.error_please_type_nickname)
             return false
         }
 
         if (keyword == "") {
-            input_keyword.error = "キーワードを入力してください。"
+            input_keyword.error = getString(R.string.error_please_type_keyword)
             return false
         }
         return true
@@ -100,13 +91,13 @@ class SetRoomInfoFragment : Fragment() {
                             startActivity(GameActivity.getLaunched(activity, keyword, nickname))
                         }
                         Status.JOIN_ROOM -> {
-                            input_keyword.error = "そのようなキーワードは存在しません"
+                            input_keyword.error = getString(R.string.error_keyword_does_not_exist)
                         }
                     }
                 } else {
                     when (status) {
                         Status.CREATE_ROOM -> {
-                            input_keyword.error = "このキーワードは使用できません。"
+                            input_keyword.error = getString(R.string.error_keyword_cannot_be_used)
 
                         }
                         Status.JOIN_ROOM -> {
@@ -126,15 +117,4 @@ class SetRoomInfoFragment : Fragment() {
         // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_type_room_info, container, false)
     }
-
-    companion object {
-
-        @JvmStatic
-        fun newInstance(status: Status) =
-            SetRoomInfoFragment().apply {
-                arguments = Bundle().apply {
-                }
-            }
-    }
-
 }
