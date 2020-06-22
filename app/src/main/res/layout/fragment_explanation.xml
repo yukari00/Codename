@@ -56,6 +56,48 @@
                 android:textSize="18sp"
                 android:layout_margin="12dp"/>
 
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="40dp"
+                android:orientation="horizontal">
+
+
+                <ImageView
+                    android:id="@+id/imageView2"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="bottom"
+                    android:layout_weight="1"
+                    app:srcCompat="@drawable/ic_baseline_people_24" />
+
+                <ImageView
+                    android:id="@+id/imageView4"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    app:srcCompat="@drawable/ic_baseline_emoji_people_24" />
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"/>
+
+                <ImageView
+                    android:id="@+id/imageView5"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    app:srcCompat="@drawable/ic_baseline_emoji_people_blue" />
+
+                <ImageView
+                    android:id="@+id/imageView6"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_gravity="bottom"
+                    app:srcCompat="@drawable/ic_baseline_people_blue" />
+            </LinearLayout>
+
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -63,64 +105,80 @@
                 android:text="ゲームが始まると、ランダムで２５枚のコードネームカードが画面上にうつされます。"
                 android:textSize="18sp" />
 
-            <TableLayout
+            <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="match_parent">
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
 
-                <TableRow
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent" >
+                <TableLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="2">
 
-                    <Button
-                        android:id="@+id/button4"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="スマホ"
-                        android:clickable="false"/>
+                    <TableRow
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent" >
 
-                    <Button
-                        android:id="@+id/button5"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="青"
-                        android:clickable="false"/>
+                        <Button
+                            android:id="@+id/button4"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:clickable="false"
+                            android:text="スマホ" />
 
-                    <Button
-                        android:id="@+id/button6"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="山"
-                        android:clickable="false"/>
-                </TableRow>
+                        <Button
+                            android:id="@+id/button5"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:clickable="false"
+                            android:text="青" />
 
-                <TableRow
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent">
+                        <Button
+                            android:id="@+id/button6"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:clickable="false"
+                            android:text="山" />
+                    </TableRow>
 
-                    <Button
-                        android:id="@+id/button"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:clickable="false"
-                        android:text="花" />
+                    <TableRow
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent">
 
-                    <Button
-                        android:id="@+id/button2"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:clickable="false"
-                        android:text="一年生" />
+                        <Button
+                            android:id="@+id/button"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:clickable="false"
+                            android:text="花" />
 
-                    <Button
-                        android:id="@+id/button3"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:clickable="false"
-                        android:text="私" />
-                </TableRow>
+                        <Button
+                            android:id="@+id/button2"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:clickable="false"
+                            android:text="一年生" />
 
-            </TableLayout>
+                        <Button
+                            android:id="@+id/button3"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:clickable="false"
+                            android:text="私" />
+                    </TableRow>
 
+                </TableLayout>
+
+                <ImageView
+                    android:id="@+id/imageView7"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_gravity="bottom"
+                    android:layout_weight="1"
+                    app:srcCompat="@drawable/ic_baseline_people_24" />
+
+
+            </LinearLayout>
 
             <TextView
                 android:layout_width="match_parent"
@@ -130,9 +188,15 @@
                 android:textSize="18sp"
                 android:layout_margin="12dp"/>
 
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
             <TableLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent">
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="2">
 
                 <TableRow
                     android:layout_width="match_parent"
@@ -192,12 +256,23 @@
 
             </TableLayout>
 
+            <ImageView
+                android:id="@+id/imageView8"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_gravity="bottom"
+                android:layout_weight="1"
+                app:srcCompat="@drawable/ic_baseline_emoji_people_24" />
+
+        </LinearLayout>
+
+
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="スパイマスターは自分のチームの番が来たら、そのターンに自チームが引けるカード数をします。そしてただ 1 つの言葉をヒントとして味方に伝えることができます。"
-                android:textSize="18sp"
-                android:layout_margin="12dp"/>
+                android:layout_margin="12dp"
+                android:text="スパイマスターは自分のチームの番が来たら、そのターンに自チームが引けるカード数を指定します。そしてただ 1 つの言葉をヒントとして味方に伝えることができます。"
+                android:textSize="18sp" />
 
             <TextView
                 android:layout_width="match_parent"
@@ -222,7 +297,7 @@
                 <ImageView
                     android:id="@+id/imageView3"
                     android:layout_width="0dp"
-                    android:layout_height="50dp"
+                    android:layout_height="100dp"
                     android:layout_weight="1"
                     android:src="@drawable/find" />
 
@@ -247,7 +322,6 @@
                         android:text="枚数：２"
                         android:textSize="10sp"
                         android:gravity="center"/>
-
 
                 </LinearLayout>
 

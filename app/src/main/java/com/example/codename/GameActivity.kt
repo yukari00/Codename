@@ -52,10 +52,6 @@ class GameActivity : AppCompatActivity(), OnFragmentListener{
         keyword = intent.extras!!.getString(INTENT_KEY_KEYWORD)!!
         nickname = intent.extras!!.getString(INTENT_KEY_NICKNAME)!!
 
-        if (status == Status.CREATE_ROOM) {
-            importWordsFromCSV()
-        }
-
         waitMembersFragment()
     }
 
@@ -88,6 +84,7 @@ class GameActivity : AppCompatActivity(), OnFragmentListener{
                     if(e != null) return@addSnapshotListener
                     val selectedCardList = mutableListOf<WordsData>()
 
+                    Log.d("Check!!!!!!!!!!!!", "Check!!!!!!!!!!!!????")
                     supportFragmentManager.beginTransaction().remove(ResultFragment()).commit();
 
                     if(query == null || query.isEmpty){
@@ -413,12 +410,22 @@ class GameActivity : AppCompatActivity(), OnFragmentListener{
     }
 
     override fun GameStart() {
-        locateEachCard()
-        btn_explain.visibility = View.VISIBLE
-        btn_explain.setOnClickListener {
-            supportFragmentManager.beginTransaction()
-                .replace(R.id.container_game, ExplanationFragment())
-                .commit()
+        database.collection(dbCollection).document(keyword).collection("selectedCards").get().addOnSuccessListener {
+            for (i in 0 until it.documents.size) {
+                val documentId = it.documents[i].id
+                database.collection(dbCollection).document(keyword).collection("selectedCards")
+                    .document(documentId).delete()
+            }
+            if(status == Status.CREATE_ROOM){
+                importWordsFromCSV()
+            }
+            locateEachCard()
+            btn_explain.visibility = View.VISIBLE
+            btn_explain.setOnClickListener {
+                supportFragmentManager.beginTransaction()
+                    .replace(R.id.container_game, ExplanationFragment())
+                    .commit()
+            }
         }
     }
 
@@ -467,18 +474,13 @@ class GameActivity : AppCompatActivity(), OnFragmentListener{
 
     override fun OnGoBackOnGameSettingFragment() {
 
-        listeningSelectedCards?.remove()
-        listeningMembers?.remove()
+            listeningWords?.remove()
+            listeningSelectedCards?.remove()
+            listeningMembers?.remove()
 
-        teamToCollectAllCards = ""
-        teamGotGray = null
-        ifGameIsOver = false
-
-        database.collection(dbCollection).document(keyword).collection("selectedCards").get().addOnSuccessListener {
-            for( i in 0 until it.documents.size){
-                val documentId = it.documents[i].id
-                database.collection(dbCollection).document(keyword).collection("selectedCards").document(documentId).delete()
-            }
+            teamToCollectAllCards = ""
+            teamGotGray = null
+            ifGameIsOver = false
 
             recycler_view.layoutManager = null
             recycler_view.adapter = null
@@ -489,11 +491,10 @@ class GameActivity : AppCompatActivity(), OnFragmentListener{
             blue_number_of_remaining.setText("")
             red_number_of_remaining.setText("")
 
-            importWordsFromCSV()
             supportFragmentManager.beginTransaction()
-                .replace(R.id.container_game, GameSettingFragment.newInstance(keyword, nickname))
+               .replace(R.id.container_game, GameSettingFragment.newInstance(keyword, nickname))
                 .commit()
-        }
+
     }
 
     private fun deletePreviousReadySign() {

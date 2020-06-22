@@ -30,7 +30,6 @@ class GameSettingFragment : Fragment() {
     private var membersList: MutableList<String> = mutableListOf()
 
     var listeningMembers: ListenerRegistration? = null
-    var listeningMembersHost: ListenerRegistration? = null
     var listeningReadySign: ListenerRegistration? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -133,7 +132,6 @@ class GameSettingFragment : Fragment() {
         adapter?.clear()
         listeningMembers?.remove()
         listeningReadySign?.remove()
-        listeningMembersHost?.remove()
     }
 
     private fun update() {
@@ -221,12 +219,10 @@ class GameSettingFragment : Fragment() {
 
     private fun showHost(myTeam: String) {
 
-       listeningMembersHost =  database.collection(dbCollection).document(keyword).collection("members")
-            .whereEqualTo("host", true).addSnapshotListener { it, e ->
+       database.collection(dbCollection).document(keyword).collection("members")
+            .whereEqualTo("host", true).get().addOnSuccessListener {
 
-                if(e != null) return@addSnapshotListener
-
-                var numberOfHost = 0
+               var numberOfHost = 0
                 var host: String? = ""
                 if (it == null || it.isEmpty) {
                     text_if_leader.setText("話し合いでスパイマスターを決めてください")
@@ -366,6 +362,9 @@ class GameSettingFragment : Fragment() {
             database.collection(dbCollection).document(keyword).collection("members")
                 .document(host)
                 .set(newHost)
+
+            val myTeam = if (teamRed.contains(nickname)) "RED" else "BLUE"
+            showHost(myTeam)
         }
     }
 
