@@ -46,10 +46,11 @@ class SetRoomInfoFragment : Fragment() {
 
     private fun joinRoom(nickname: String, keyword: String) {
 
-        database.collection(dbCollection).document(keyword).collection("members").whereEqualTo("name", nickname).get().addOnSuccessListener {
+        database.collection(dbCollection).document(keyword).collection(collectionMembers).whereEqualTo(
+            nameFieldPath, nickname).get().addOnSuccessListener {
             if(it.isEmpty){
-                val member = hashMapOf("member" to nickname)
-                database.collection(dbCollection).document(keyword).collection("members").document(nickname)
+                val member = hashMapOf(memberFieldPath to nickname)
+                database.collection(dbCollection).document(keyword).collection(collectionMembers).document(nickname)
                     .set(member)
             }
         }
@@ -82,9 +83,9 @@ class SetRoomInfoFragment : Fragment() {
 
     private fun ifKeywordAlreadyExist(keyword: String, nickname: String) {
 
-        database.collection(dbCollection).whereEqualTo("keyword", keyword).get()
+        database.collection(dbCollection).document(keyword).get()
             .addOnSuccessListener {
-                if (it.isEmpty) {
+                if (!it.exists()) {
                     when (status) {
                         Status.CREATE_ROOM -> {
                             createRoom(nickname, keyword)
@@ -115,5 +116,12 @@ class SetRoomInfoFragment : Fragment() {
     ): View? {
         // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_type_room_info, container, false)
+    }
+
+    companion object{
+        const val collectionMembers = "members"
+
+        const val memberFieldPath = "member"
+        const val nameFieldPath = "name"
     }
 }
