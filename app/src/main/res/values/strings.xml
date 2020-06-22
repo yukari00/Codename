@@ -2,4 +2,31 @@
     <string name="app_name">Codename</string>
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
+
+    <!--explanation -->
+    <string name="what_is_codename">Codename(コードネーム)とは？</string>
+    <string name="number_participants">参加人数：４人以上 (各チーム２人以上）</string>
+    <string name="explanation1">「コードネーム」は2 チームに分かれてスパイマスターのヒントを頼りに味方のスパイを当てるゲームです。</string>
+    <string name="explanation2">参加者は赤チーム、青チームに分かれます。両チームはそれぞれチーム内の 1 人をスパイマスターとして選出します。</string>
+    <string name="explanation3">ゲームが始まると、ランダムで２５枚のコードネームカードが画面上にうつされます。</string>
+    <string name="explanation4">2 人のスパイマスターだけが 25 人のスパイの正体を知っています。
+フィールドスパイはスパイたちのコードネームしか分かりません。</string>
+    <string name="explanation5">スパイマスターは自分のチームの番が来たら、そのターンに自チームが引けるカード数を指定します。そしてただ 1 つの言葉をヒントとして味方に伝えることができます。</string>
+    <string name="explanation6">ヒントはなるべく自チームの複数のコードネームカードに関連するものにしましょう。
+フィールドスパイたちは、自チームのスパイマスターが話したヒントが意味する単語を推測し、指定された枚数分のコードネームカードを選びます。
+フィールドスパイが複数人いる場合は投票を行います。</string>
+    <string name="explanation7">相手チームより先に自チームのスパイを全員探し当てましょう！スパイの数は画面の右上に表示されるので確認しましょう。</string>
+    <string name="explanation8">大事なことを言い忘れてました！25枚のカードの内、一枚だけどのチームも決して当ててはならない暗殺者カードがあります。これを引いたチームは即負けとなるので気をつけてくださいね！</string>
+
+    <string name="card1">スマホ</string>
+    <string name="card2">青</string>
+    <string name="card3">山</string>
+    <string name="card4">花</string>
+    <string name="card5">一年生</string>
+    <string name="card6">私</string>
+
+    <string name="hint">ヒント：ぼく</string>
+    <string name="required_number_of_card">枚数：２</string>
+
+
 </resources>
