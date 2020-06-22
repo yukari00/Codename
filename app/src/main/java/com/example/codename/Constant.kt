@@ -2,7 +2,7 @@ package com.example.codename
 
 import android.media.SoundPool
 
-const val dbCollection = "COLLECTION"
+const val dbCollection = "com.example.codename"
 
 enum class Status{
     CREATE_ROOM,

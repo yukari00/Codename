@@ -27,6 +27,7 @@ class GameActivity : AppCompatActivity(), OnFragmentListener{
     var listeningWords: ListenerRegistration? = null
     var listeningSelectedCards: ListenerRegistration? = null
     var listeningMembers: ListenerRegistration? = null
+    var listeningCleared: ListenerRegistration? = null
 
     var keyword: String = ""
     var nickname: String = ""
@@ -64,27 +65,34 @@ class GameActivity : AppCompatActivity(), OnFragmentListener{
 
     private fun locateEachCard() {
 
-        listeningWords = database.collection(dbCollection).document(keyword).collection("words").document(keyword)
+        btn_explain.visibility = View.VISIBLE
+        btn_explain.setOnClickListener {
+            supportFragmentManager.beginTransaction()
+                .replace(R.id.container_game, ExplanationFragment())
+                .commit()
+        }
+
+        listeningWords = database.collection(dbCollection).document(keyword).collection(
+            collectionWords).document(keyword)
             .addSnapshotListener { it, e ->
 
-                Log.d("Check!!!!!!!!!!!!", "Check!!!!!!!!!!!!")
                 if (e != null) return@addSnapshotListener
                 if (it == null || !it.exists()) return@addSnapshotListener
 
 
                 val wordsDataList = mutableListOf<WordsData>()
-                val hashmap = it["words"] as MutableList<HashMap<String, String>>
+                val hashmap = it[wordsFieldPath] as MutableList<HashMap<String, String>>
 
                 for(i in 0 .. 24){
-                    wordsDataList.add(WordsData(hashmap[i]["word"], hashmap[i]["color"]))
+                    wordsDataList.add(WordsData(hashmap[i][wordFieldPath], hashmap[i][colorFieldPath]))
                 }
 
-                listeningSelectedCards = database.collection(dbCollection).document(keyword).collection("selectedCards").addSnapshotListener { query, e ->
+                listeningSelectedCards = database.collection(dbCollection).document(keyword).collection(
+                    collectionSelectedCards).addSnapshotListener { query, e ->
 
                     if(e != null) return@addSnapshotListener
                     val selectedCardList = mutableListOf<WordsData>()
 
-                    Log.d("Check!!!!!!!!!!!!", "Check!!!!!!!!!!!!????")
                     supportFragmentManager.beginTransaction().remove(ResultFragment()).commit();
 
                     if(query == null || query.isEmpty){
@@ -129,11 +137,11 @@ class GameActivity : AppCompatActivity(), OnFragmentListener{
     private fun showWhatYouClicked(listItem: MutableList<String>, word: String, wordsDataList: MutableList<WordsData>) {
 
         val myTeam = if(isMyTeam == Team.RED) "RED" else "BLUE"
-        database.collection(dbCollection).document(keyword).collection("words").document(myTeam).get().addOnSuccessListener{
+        database.collection(dbCollection).document(keyword).collection(collectionWords).document(myTeam).get().addOnSuccessListener{
 
             if (it == null || !it.exists()) return@addOnSuccessListener
 
-            val numCardPick = it.getLong("number of Cards to pick")?.toInt()
+            val numCardPick = it.getLong(numberOfCardsToPickFieldPath)?.toInt()
                 ?: return@addOnSuccessListener
 
             if (!listItem.contains(word)){
@@ -150,7 +158,7 @@ class GameActivity : AppCompatActivity(), OnFragmentListener{
             btn_vote.setOnClickListener {
                 //投票ボタン処理
                 val voteData = Member(nickname, isMyTeam, isHost, vote = listItem)
-                database.collection(dbCollection).document(keyword).collection("members").document(nickname).set(voteData)
+                database.collection(dbCollection).document(keyword).collection(collectionMembers).document(nickname).set(voteData)
 
                 waitUntilAllVote(wordsDataList)
             }
@@ -161,7 +169,7 @@ class GameActivity : AppCompatActivity(), OnFragmentListener{
 
         val turnCountList = mutableListOf<Int>()
         for (i in query.documents.indices){
-            val tCount = query.documents[i].getLong("turnCount")?.toInt() ?: return
+            val tCount = query.documents[i].getLong(turnCountFieldPath)?.toInt() ?: return
             turnCountList.add(tCount)
         }
         turnCount = turnCountList.max()?: return
@@ -181,9 +189,9 @@ class GameActivity : AppCompatActivity(), OnFragmentListener{
         var NumBlueCard = 0
 
         query.documents.forEach {
-            val wordList = it["clickedWords"] as List<HashMap<String, String>>
+            val wordList = it[clickedWordsFieldPath] as List<HashMap<String, String>>
             for (j in wordList.indices){
-                val color = wordList[j]["color"]
+                val color = wordList[j][colorFieldPath]
                 when(color){
                     "RED" -> NumRedCard++
                     "BLUE" -> NumBlueCard++
@@ -216,10 +224,10 @@ class GameActivity : AppCompatActivity(), OnFragmentListener{
         }
 
         for(i in 0 until query.documents.size){
-            val cardsHash = query.documents[i]["clickedWords"] as MutableList<HashMap<String, String>>? ?: return
+            val cardsHash = query.documents[i][clickedWordsFieldPath] as MutableList<HashMap<String, String>>? ?: return
 
             for (j in 0 until cardsHash.size ){
-                selectedCardList.add(WordsData(cardsHash[j]["word"], cardsHash[j]["color"]))
+                selectedCardList.add(WordsData(cardsHash[j][wordFieldPath], cardsHash[j][colorFieldPath]))
             }
         }
     }
@@ -229,21 +237,22 @@ class GameActivity : AppCompatActivity(), OnFragmentListener{
             .replace(R.id.container_game_detail, GameWaitingFragment()).commit()
 
         val myTeam = if(isMyTeam == Team.RED) "RED" else "BLUE"
-        listeningMembers = database.collection(dbCollection).document(keyword).collection("members")
-            .whereEqualTo("team", myTeam).whereEqualTo("host", false).addSnapshotListener { it, e ->
+        listeningMembers = database.collection(dbCollection).document(keyword).collection(
+            collectionMembers)
+            .whereEqualTo(teamFieldPath, myTeam).whereEqualTo(hostFieldPath, false).addSnapshotListener { it, e ->
                 val players: MutableList<String> = mutableListOf()
                 val voteItemList = mutableListOf<String>()
                 if (e != null) return@addSnapshotListener
                 if (it == null || it.isEmpty) return@addSnapshotListener
 
                 for (document in it) {
-                    val voteItems= document.get("vote") ?: return@addSnapshotListener
+                    val voteItems= document.get(voteFieldPath) ?: return@addSnapshotListener
                     voteItems as List<String>
                     if(voteItems.isEmpty()) return@addSnapshotListener
                     voteItems.forEach {
                         voteItemList.add(it)
                     }
-                    players.add(document.getString("name")!!)
+                    players.add(document.getString(nameFieldPath)!!)
                 }
                 resultOfVote(voteItemList, workDataList)
             }
@@ -252,8 +261,8 @@ class GameActivity : AppCompatActivity(), OnFragmentListener{
     private fun resultOfVote(voteItemList: MutableList<String>, workDataList: MutableList<WordsData>) {
 
         val myTeam = if(isMyTeam == Team.RED) "RED" else "BLUE"
-        database.collection(dbCollection).document(keyword).collection("words").document(myTeam).get().addOnSuccessListener {
-            val numCardPick = it.getLong("number of Cards to pick")?.toInt() ?: return@addOnSuccessListener
+        database.collection(dbCollection).document(keyword).collection(collectionWords).document(myTeam).get().addOnSuccessListener {
+            val numCardPick = it.getLong(numberOfCardsToPickFieldPath)?.toInt() ?: return@addOnSuccessListener
 
             val countWords = voteItemList.groupingBy { it }.eachCount()
 
@@ -298,7 +307,8 @@ class GameActivity : AppCompatActivity(), OnFragmentListener{
 
                 val selectedCardsInfo = SelectedCardsInfo(clickedData, turnCount)
                 deleteHostHintInfo()
-                database.collection(dbCollection).document(keyword).collection("selectedCards").add(selectedCardsInfo)
+                database.collection(dbCollection).document(keyword).collection(
+                    collectionSelectedCards).add(selectedCardsInfo)
 
             }
         }
@@ -307,16 +317,16 @@ class GameActivity : AppCompatActivity(), OnFragmentListener{
     private fun deleteHostHintInfo() {
 
         val updatesHint = hashMapOf<String, Any>(
-            "hint" to FieldValue.delete()
+            hintFieldPath to FieldValue.delete()
         )
 
         val updatesNumber = hashMapOf<String, Any>(
-            "number of Cards to pick" to FieldValue.delete()
+            numberOfCardsToPickFieldPath to FieldValue.delete()
         )
 
         val myTeam = if(isMyTeam == Team.RED) "RED" else "BLUE"
-        database.collection(dbCollection).document(keyword).collection("words").document(myTeam).update(updatesHint)
-        database.collection(dbCollection).document(keyword).collection("words").document(myTeam).update(updatesNumber)
+        database.collection(dbCollection).document(keyword).collection(collectionWords).document(myTeam).update(updatesHint)
+        database.collection(dbCollection).document(keyword).collection(collectionWords).document(myTeam).update(updatesNumber)
     }
 
     private fun newTurn() {
@@ -333,8 +343,6 @@ class GameActivity : AppCompatActivity(), OnFragmentListener{
 
     private fun redTurn() {
         if(isMyTeam == Team.RED && isHost) host() else if (isMyTeam == Team.RED) player() else waitUntilYourTurn()
-        Log.d("isMyTeam", "$isMyTeam")
-        Log.d("isHost", "$isHost")
 
     }
 
@@ -348,7 +356,7 @@ class GameActivity : AppCompatActivity(), OnFragmentListener{
     private fun player() {
         isWaiter = false
         val myTeam = if(isMyTeam == Team.RED) "RED" else "BLUE"
-        database.collection(dbCollection).document(keyword).collection("words").document(myTeam).get().addOnSuccessListener {
+        database.collection(dbCollection).document(keyword).collection(collectionWords).document(myTeam).get().addOnSuccessListener {
 
             if (it == null || !it.exists()) {
                 supportFragmentManager.beginTransaction()
@@ -356,10 +364,10 @@ class GameActivity : AppCompatActivity(), OnFragmentListener{
                     .commit()
             }
 
-            val hint = it?.getString("hint") ?: return@addOnSuccessListener
-            val numCardPick = it.getLong("number of Cards to pick")?.toInt() ?: return@addOnSuccessListener
-            Log.d("hint", hint)
-            Log.d("number of Cards to pick", "$numCardPick")
+            val hint = it?.getString(hintFieldPath) ?: return@addOnSuccessListener
+            val numCardPick = it.getLong(numberOfCardsToPickFieldPath)?.toInt() ?: return@addOnSuccessListener
+            Log.d(hintFieldPath, hint)
+            Log.d(numberOfCardsToPickFieldPath, "$numCardPick")
             supportFragmentManager.beginTransaction()
                 .replace(R.id.container_game_detail, GamePlayerFragment.newInstance(hint, numCardPick)).commit()
         }
@@ -375,18 +383,18 @@ class GameActivity : AppCompatActivity(), OnFragmentListener{
     }
 
     private fun deleteAllVoteInfo() {
-        database.collection(dbCollection).document(keyword).collection("members").get().addOnSuccessListener {
+        database.collection(dbCollection).document(keyword).collection(collectionMembers).get().addOnSuccessListener {
             val membersList = mutableListOf<String>()
             for (i in it.documents.indices){
-                val name = it.documents[i].getString("name")?:return@addOnSuccessListener
+                val name = it.documents[i].getString(nameFieldPath)?:return@addOnSuccessListener
                 membersList.add(name)
             }
 
             val updates = hashMapOf<String, Any>(
-                "vote" to FieldValue.delete()
+                voteFieldPath to FieldValue.delete()
             )
             for (member in membersList){
-                database.collection(dbCollection).document(keyword).collection("members").document(member).update(updates)
+                database.collection(dbCollection).document(keyword).collection(collectionMembers).document(member).update(updates)
             }
         }
     }
@@ -395,6 +403,28 @@ class GameActivity : AppCompatActivity(), OnFragmentListener{
 
         const val INTENT_KEY_KEYWORD = "keyword"
         const val INTENT_KEY_NICKNAME = "nickname"
+
+        const val collectionMembers = "members"
+        const val collectionWords = "words"
+        const val collectionSelectedCards = "selectedCards"
+
+        const val numberOfCardsToPickFieldPath = "number of Cards to pick"
+        const val hintFieldPath = "hint"
+
+        const val wordsFieldPath = "words"
+
+        const val clickedWordsFieldPath = "clickedWords"
+        const val turnCountFieldPath = "turnCount"
+
+        const val nameFieldPath = "name"
+        const val hostFieldPath = "host"
+        const val teamFieldPath = "team"
+        const val voteFieldPath = "vote"
+
+        const val colorFieldPath = "color"
+        const val wordFieldPath = "word"
+
+
 
         fun getLaunched(fragment: FragmentActivity?, keyword: String, nickname: String) =
             Intent(fragment, GameActivity::class.java).apply {
@@ -410,45 +440,53 @@ class GameActivity : AppCompatActivity(), OnFragmentListener{
     }
 
     override fun GameStart() {
-        database.collection(dbCollection).document(keyword).collection("selectedCards").get().addOnSuccessListener {
-            for (i in 0 until it.documents.size) {
-                val documentId = it.documents[i].id
-                database.collection(dbCollection).document(keyword).collection("selectedCards")
-                    .document(documentId).delete()
-            }
-            if(status == Status.CREATE_ROOM){
-                importWordsFromCSV()
-            }
-            locateEachCard()
-            btn_explain.visibility = View.VISIBLE
-            btn_explain.setOnClickListener {
-                supportFragmentManager.beginTransaction()
-                    .replace(R.id.container_game, ExplanationFragment())
-                    .commit()
-            }
+
+        if (status == Status.CREATE_ROOM) {
+            database.collection(dbCollection).document(keyword).collection(collectionSelectedCards)
+                .get().addOnSuccessListener {
+                    for (i in 0 until it.documents.size) {
+                        val documentId = it.documents[i].id
+                        database.collection(dbCollection).document(keyword).collection(
+                            collectionSelectedCards
+                        ).document(documentId).delete()
+                    }
+                    importWordsFromCSV()
+                    database.collection(dbCollection).document(keyword)
+                        .update("clearedPreviousData", true)
+                    locateEachCard()
+                }
+        } else {
+            listeningCleared =
+                database.collection(dbCollection).document(keyword).addSnapshotListener { it, e ->
+                    if (e != null) return@addSnapshotListener
+                    if (it == null) return@addSnapshotListener
+
+                    val clearedPreviousData = it.getBoolean("clearedPreviousData") ?: false
+                    if (clearedPreviousData) locateEachCard()
+                }
         }
     }
 
     override fun OnMemberDeleted() {
-        database.collection(dbCollection).document(keyword).collection("members").document(nickname).delete()
+        database.collection(dbCollection).document(keyword).collection(collectionMembers).document(nickname).delete()
         finish()
     }
 
     override fun OnRoomDeleted(membersList: MutableList<String>) {
         membersList.forEach {
-            database.collection(dbCollection).document(keyword).collection("members").document(it).delete()
+            database.collection(dbCollection).document(keyword).collection(collectionMembers).document(it).delete()
         }
-        database.collection(dbCollection).document(keyword).collection("words").document("RED").delete()
-        database.collection(dbCollection).document(keyword).collection("words").document("BLUE").delete()
-        database.collection(dbCollection).document(keyword).collection("words").document(keyword).delete()
+        database.collection(dbCollection).document(keyword).collection(collectionWords).document("RED").delete()
+        database.collection(dbCollection).document(keyword).collection(collectionWords).document("BLUE").delete()
+        database.collection(dbCollection).document(keyword).collection(collectionWords).document(keyword).delete()
         database.collection(dbCollection).document(keyword).delete()
         finish()
     }
 
     override fun OnHostCallBack(hint: String, numCardPick: Int) {
         val myTeam = if(isMyTeam == Team.RED) "RED" else "BLUE"
-        val hashmap = hashMapOf("hint" to hint, "number of Cards to pick" to numCardPick)
-        database.collection(dbCollection).document(keyword).collection("words").document(myTeam).set(hashmap)
+        val hashmap = hashMapOf( hintFieldPath to hint, numberOfCardsToPickFieldPath to numCardPick)
+        database.collection(dbCollection).document(keyword).collection(collectionWords).document(myTeam).set(hashmap)
 
         supportFragmentManager.beginTransaction()
             .replace(R.id.container_game_detail, GameWaitingFragment())
@@ -461,39 +499,44 @@ class GameActivity : AppCompatActivity(), OnFragmentListener{
         teamGotGray = null
         ifGameIsOver = false
 
-        database.collection(dbCollection).document(keyword).collection("selectedCards").get()
-            .addOnSuccessListener {
-                for (i in 0 until it.documents.size) {
-                    val documentId = it.documents[i].id
-                    database.collection(dbCollection).document(keyword).collection("selectedCards")
-                        .document(documentId).delete()
+        if (status == Status.CREATE_ROOM){
+            database.collection(dbCollection).document(keyword).collection(collectionSelectedCards).get()
+                .addOnSuccessListener {
+                    for (i in 0 until it.documents.size) {
+                        val documentId = it.documents[i].id
+                        database.collection(dbCollection).document(keyword).collection(
+                            collectionSelectedCards)
+                            .document(documentId).delete()
+                    }
+                    importWordsFromCSV()
                 }
-                importWordsFromCSV()
-            }
+        }
+
     }
 
     override fun OnGoBackOnGameSettingFragment() {
 
-            listeningWords?.remove()
-            listeningSelectedCards?.remove()
-            listeningMembers?.remove()
+        listeningWords?.remove()
+        listeningSelectedCards?.remove()
+        listeningMembers?.remove()
+        listeningCleared?.remove()
 
-            teamToCollectAllCards = ""
-            teamGotGray = null
-            ifGameIsOver = false
+        teamToCollectAllCards = ""
+        teamGotGray = null
+        ifGameIsOver = false
 
-            recycler_view.layoutManager = null
-            recycler_view.adapter = null
-            btn_explain.visibility = View.INVISIBLE
-            text_which_team_turn.setText("")
-            remaining_red.setText("")
-            remaining_blue.setText("")
-            blue_number_of_remaining.setText("")
-            red_number_of_remaining.setText("")
+        recycler_view.layoutManager = null
+        recycler_view.adapter = null
+        btn_explain.visibility = View.INVISIBLE
+        text_which_team_turn.setText("")
+        remaining_red.setText("")
+        remaining_blue.setText("")
+        blue_number_of_remaining.setText("")
+        red_number_of_remaining.setText("")
 
-            supportFragmentManager.beginTransaction()
-               .replace(R.id.container_game, GameSettingFragment.newInstance(keyword, nickname))
-                .commit()
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.container_game, GameSettingFragment.newInstance(keyword, nickname))
+            .commit()
 
     }
 
@@ -511,10 +554,14 @@ class GameActivity : AppCompatActivity(), OnFragmentListener{
         val delete4 = hashMapOf<String, Any>(
             "readyForAnotherGame" to FieldValue.delete()
         )
+        val delete5 = hashMapOf<String, Any>(
+            "clearedPreviousData" to FieldValue.delete()
+        )
         database.collection(dbCollection).document(keyword).update(delete1)
         database.collection(dbCollection).document(keyword).update(delete2)
         database.collection(dbCollection).document(keyword).update(delete3)
         database.collection(dbCollection).document(keyword).update(delete4)
+        database.collection(dbCollection).document(keyword).update(delete5)
     }
 
     private fun importWordsFromCSV() {
@@ -569,8 +616,8 @@ class GameActivity : AppCompatActivity(), OnFragmentListener{
         val gray = list[24]
         selectedWordsList.set(gray, WordsData(selectedWordsList[gray].word, "GRAY"))
 
-        val saveList = hashMapOf("words" to selectedWordsList)
-        database.collection(dbCollection).document(keyword).collection("words").document(keyword)
+        val saveList = hashMapOf(wordsFieldPath to selectedWordsList)
+        database.collection(dbCollection).document(keyword).collection(collectionWords).document(keyword)
             .set(saveList)
 
     }

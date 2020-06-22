@@ -44,4 +44,9 @@
     <string name="error_please_type_keyword">キーワードを入力してください。</string>
     <string name="error_keyword_does_not_exist">そのようなキーワードは存在しません。</string>
     <string name="error_keyword_cannot_be_used">このキーワードは使用できません。</string>
+
+    <!--WaitingMembersFragment -->
+    <string name="text1_waitingMembersFrag">４人以上揃ったらゲームを開始することができます。</string>
+    <string name="text2_waitingMembersFrag">参加メンバー</string>
+    <string name="text3_waitingMembersFrag">受付終了</string>
 </resources>
