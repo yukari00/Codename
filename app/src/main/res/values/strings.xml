@@ -28,5 +28,9 @@
     <string name="hint">ヒント：ぼく</string>
     <string name="required_number_of_card">枚数：２</string>
 
+    <!--Main Activity -->
+    <string name="create_room">ルーム作成</string>
+    <string name="join_room">ルーム参加</string>
+    <string name="explanation">ルール説明</string>
 
 </resources>
