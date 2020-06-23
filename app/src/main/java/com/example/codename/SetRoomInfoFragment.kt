@@ -12,6 +12,14 @@ import kotlinx.android.synthetic.main.fragment_type_room_info.*
 class SetRoomInfoFragment : Fragment() {
 
     val database = FirebaseFirestore.getInstance()
+    var uid = ""
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        arguments?.let {
+           uid = it.getString(INTENT_KEY_UID)?: return@let
+        }
+    }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
@@ -50,7 +58,7 @@ class SetRoomInfoFragment : Fragment() {
             nameFieldPath, nickname).get().addOnSuccessListener {
             if(it.isEmpty){
                 val member = hashMapOf(memberFieldPath to nickname)
-                database.collection(dbCollection).document(keyword).collection(collectionMembers).document(nickname)
+                database.collection(dbCollection).document(keyword).collection(collectionMembers).document(uid)
                     .set(member)
             }
         }
@@ -62,7 +70,7 @@ class SetRoomInfoFragment : Fragment() {
         val member = hashMapOf("member" to nickname)
 
         database.collection(dbCollection).document(keyword).set(newRoom)
-        database.collection(dbCollection).document(keyword).collection("members").document(nickname)
+        database.collection(dbCollection).document(keyword).collection(collectionMembers).document(uid)
             .set(member)
     }
 
@@ -123,5 +131,17 @@ class SetRoomInfoFragment : Fragment() {
 
         const val memberFieldPath = "member"
         const val nameFieldPath = "name"
+
+        const val INTENT_KEY_UID = "INTENT_KEY_UID"
+
+        @JvmStatic
+        fun newInstance(uid: String) =
+            SetRoomInfoFragment().apply {
+                arguments = Bundle().apply {
+
+                    putString(INTENT_KEY_UID, uid)
+
+                }
+            }
     }
 }

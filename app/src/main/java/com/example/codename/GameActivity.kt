@@ -87,45 +87,50 @@ class GameActivity : AppCompatActivity(), OnFragmentListener{
                     wordsDataList.add(WordsData(hashmap[i][wordFieldPath], hashmap[i][colorFieldPath]))
                 }
 
-                listeningSelectedCards = database.collection(dbCollection).document(keyword).collection(
-                    collectionSelectedCards).addSnapshotListener { query, e ->
+                updateSelectedCards(wordsDataList)
 
-                    if(e != null) return@addSnapshotListener
-                    val selectedCardList = mutableListOf<WordsData>()
-
-                    supportFragmentManager.beginTransaction().remove(ResultFragment()).commit();
-
-                    if(query == null || query.isEmpty){
-
-                        remaining_red.setText("赤カードの残り枚数:")
-                        remaining_blue.setText("青カードの残り枚数:")
-                        red_number_of_remaining.setText("8")
-                        blue_number_of_remaining.setText("7")
-
-                        turn = Turn.RED_TEAM_TURN
-                        text_which_team_turn.setText("赤チームのターンです")
-
-                    } else{
-
-                        willUpdate(query, selectedCardList)
-                    }
-
-                    newTurn()
-
-                    val listItem = mutableListOf<String>()
-
-                    val adapter = CardAdapter(wordsDataList, selectedCardList, object : CardAdapter.OnCardAdapterListener {
-                        override fun OnClickCard(word: String, wordsData: WordsData, holder: CardAdapter.ViewHolder) {
-
-                            showWhatYouClicked(listItem, word, wordsDataList)
-                        }
-                    })
-                    recycler_view.layoutManager = GridLayoutManager(this, 5)
-                    recycler_view.adapter = adapter
-
-                    if(ifGameIsOver) showResultFragment()
-                }
             }
+    }
+
+    private fun updateSelectedCards(wordsDataList: MutableList<WordsData>) {
+        listeningSelectedCards = database.collection(dbCollection).document(keyword).collection(
+            collectionSelectedCards).addSnapshotListener { query, e ->
+
+            if(e != null) return@addSnapshotListener
+            val selectedCardList = mutableListOf<WordsData>()
+
+            supportFragmentManager.beginTransaction().remove(ResultFragment()).commit();
+
+            if(query == null || query.isEmpty){
+
+                remaining_red.setText("赤カードの残り枚数:")
+                remaining_blue.setText("青カードの残り枚数:")
+                red_number_of_remaining.setText("8")
+                blue_number_of_remaining.setText("7")
+
+                turn = Turn.RED_TEAM_TURN
+                text_which_team_turn.setText("赤チームのターンです")
+
+            } else{
+
+                willUpdate(query, selectedCardList)
+            }
+
+            newTurn()
+
+            val listItem = mutableListOf<String>()
+
+            val adapter = CardAdapter(wordsDataList, selectedCardList, object : CardAdapter.OnCardAdapterListener {
+                override fun OnClickCard(word: String, wordsData: WordsData, holder: CardAdapter.ViewHolder) {
+
+                    showWhatYouClicked(listItem, word, wordsDataList)
+                }
+            })
+            recycler_view.layoutManager = GridLayoutManager(this, 5)
+            recycler_view.adapter = adapter
+
+            if(ifGameIsOver) showResultFragment()
+        }
     }
 
     private fun showResultFragment() {
@@ -153,7 +158,7 @@ class GameActivity : AppCompatActivity(), OnFragmentListener{
                 }
             }
 
-            chosen_cards.setText("${listItem.joinToString()}")
+            chosen_cards.setText(listItem.joinToString())
 
             btn_vote.setOnClickListener {
                 //投票ボタン処理
