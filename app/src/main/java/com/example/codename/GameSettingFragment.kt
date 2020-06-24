@@ -153,10 +153,12 @@ class GameSettingFragment : Fragment() {
                     membersListUpdate.add(Uid(name, uid))
             }
             membersList = membersListUpdate
+            Log.d("status", "$status")
 
             if (status == Status.CREATE_ROOM) {
 
                 splitMembersToTwoTeam(membersListUpdate)
+                getTwoTeamInfoFromFirestore()
 
             }else getTwoTeamInfoFromFirestore()
         }
@@ -167,6 +169,7 @@ class GameSettingFragment : Fragment() {
 
        listeningMembers = database.collection(dbCollection).document(keyword).collection("members")
             .addSnapshotListener { it, e ->
+                val membersListUpdate: MutableList<Uid> = mutableListOf()
                val teamRed: MutableList<Uid> = mutableListOf()
                 val teamBlue: MutableList<Uid> = mutableListOf()
 
@@ -178,12 +181,16 @@ class GameSettingFragment : Fragment() {
                    val name = document.getString("name")?: ""
                    val uid = document.id
                    val team = document.getString("team")
+                   membersListUpdate.add(Uid(name, uid))
                    if(team == "RED") teamRed.add(Uid(name, uid)) else teamBlue.add(Uid(name, uid))
-
                }
 
-                setSpinner(teamRed, teamBlue)
-                individualsInfo(teamRed, teamBlue)
+                membersList = membersListUpdate
+
+                if(teamRed.size != 0) {
+                    setSpinner(teamRed, teamBlue)
+                    individualsInfo(teamRed, teamBlue)
+                }
            }
     }
 
@@ -193,12 +200,12 @@ class GameSettingFragment : Fragment() {
     ) {
 
         val teamRedNameList = mutableListOf<String>()
-        val teamBlueNameLust = mutableListOf<String>()
+        val teamBlueNameList = mutableListOf<String>()
         teamRed.forEach {
             teamRedNameList.add(it.name)
         }
         teamBlue.forEach {
-            teamBlueNameLust.add(it.name)
+            teamBlueNameList.add(it.name)
         }
         val myTeam = if (teamRedNameList.contains(nickname)) "RED" else "BLUE"
 
@@ -210,11 +217,11 @@ class GameSettingFragment : Fragment() {
             text_my_team_members.setText("${teamRedNameList.joinToString()}")
         } else {
             text_tell_which_team.setText("${nickname}さん、あなたは青チームです")
-            text_my_team_members.setText("${teamBlueNameLust.joinToString()}")
+            text_my_team_members.setText("${teamBlueNameList.joinToString()}")
         }
 
         text_red_mem_num.setText("赤チームの人数は${teamRedNameList.size}人です")
-        text_blue_mem_num.setText("青チームの人数は${teamBlueNameLust.size}人です")
+        text_blue_mem_num.setText("青チームの人数は${teamBlueNameList.size}人です")
 
     }
 
@@ -302,16 +309,17 @@ class GameSettingFragment : Fragment() {
 
         teamRed.forEach { it ->
             val memberInfo = Member(it.name, team = Team.RED)
-            database.collection(dbCollection).document(keyword).collection("members").document(it.uid).set(memberInfo)
-
+            database.collection(dbCollection).document(keyword).collection("members").document(it.uid).set(memberInfo).addOnSuccessListener {
+                teamBlue.forEach {
+                    val memberInfo = Member(it.name, team = Team.BLUE)
+                    database.collection(dbCollection).document(keyword).collection("members")
+                        .document(it.uid).set(memberInfo).addOnSuccessListener {
+                        getTwoTeamInfoFromFirestore()
+                    }
+                }
+            }
         }
         //Todo セットできていない！
-        teamBlue.forEach {
-            val memberInfo = Member(it.name, team = Team.BLUE)
-            database.collection(dbCollection).document(keyword).collection("members").document(it.uid).set(memberInfo)
-        }
-
-        getTwoTeamInfoFromFirestore()
 
     }
 
@@ -335,12 +343,14 @@ class GameSettingFragment : Fragment() {
             Team.RED
         } else Team.BLUE
 
+        Log.d("activity", "$activity")
+
         adapter=
             when (isMyTeam) {
-                Team.RED -> ArrayAdapter(mContext,
+                Team.RED -> ArrayAdapter(activity!!.baseContext,
                     R.layout.spiner_item,
                     teamRedNameList)
-                Team.BLUE -> ArrayAdapter(mContext,
+                Team.BLUE -> ArrayAdapter(activity!!.baseContext,
                     R.layout.spiner_item,
                     teamBlueNameList)
             }
