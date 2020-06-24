@@ -10,3 +10,5 @@ data class Member(
 )
 
 data class SelectedCardsInfo(val clickedWords: List<WordsData>, val turnCount: Int)
+
+data class Uid(val name: String, val uid: String)

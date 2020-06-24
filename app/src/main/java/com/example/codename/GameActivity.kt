@@ -31,6 +31,7 @@ class GameActivity : AppCompatActivity(), OnFragmentListener{
 
     var keyword: String = ""
     var nickname: String = ""
+    var uid: String = ""
 
     lateinit var turn: Turn
     var turnCount = 0
@@ -52,6 +53,7 @@ class GameActivity : AppCompatActivity(), OnFragmentListener{
 
         keyword = intent.extras!!.getString(INTENT_KEY_KEYWORD)!!
         nickname = intent.extras!!.getString(INTENT_KEY_NICKNAME)!!
+        uid = intent.extras!!.getString(INTENT_KEY_UID)!!
 
         waitMembersFragment()
     }
@@ -163,7 +165,8 @@ class GameActivity : AppCompatActivity(), OnFragmentListener{
             btn_vote.setOnClickListener {
                 //投票ボタン処理
                 val voteData = Member(nickname, isMyTeam, isHost, vote = listItem)
-                database.collection(dbCollection).document(keyword).collection(collectionMembers).document(nickname).set(voteData)
+                database.collection(dbCollection).document(keyword).collection(collectionMembers).document(uid).set(voteData)
+                Log.d("uid", uid)
 
                 waitUntilAllVote(wordsDataList)
             }
@@ -408,6 +411,7 @@ class GameActivity : AppCompatActivity(), OnFragmentListener{
 
         const val INTENT_KEY_KEYWORD = "keyword"
         const val INTENT_KEY_NICKNAME = "nickname"
+        const val INTENT_KEY_UID = "uid"
 
         const val collectionMembers = "members"
         const val collectionWords = "words"
@@ -431,10 +435,11 @@ class GameActivity : AppCompatActivity(), OnFragmentListener{
 
 
 
-        fun getLaunched(fragment: FragmentActivity?, keyword: String, nickname: String) =
+        fun getLaunched(fragment: FragmentActivity?, keyword: String, nickname: String, uid: String) =
             Intent(fragment, GameActivity::class.java).apply {
                 putExtra(INTENT_KEY_KEYWORD, keyword)
                 putExtra(INTENT_KEY_NICKNAME, nickname)
+                putExtra(INTENT_KEY_UID, uid)
             }
     }
 
@@ -473,13 +478,13 @@ class GameActivity : AppCompatActivity(), OnFragmentListener{
     }
 
     override fun OnMemberDeleted() {
-        database.collection(dbCollection).document(keyword).collection(collectionMembers).document(nickname).delete()
+        database.collection(dbCollection).document(keyword).collection(collectionMembers).document(uid).delete()
         finish()
     }
 
-    override fun OnRoomDeleted(membersList: MutableList<String>) {
+    override fun OnRoomDeleted(membersList: MutableList<Uid>) {
         membersList.forEach {
-            database.collection(dbCollection).document(keyword).collection(collectionMembers).document(it).delete()
+            database.collection(dbCollection).document(keyword).collection(collectionMembers).document(it.uid).delete()
         }
         database.collection(dbCollection).document(keyword).collection(collectionWords).document("RED").delete()
         database.collection(dbCollection).document(keyword).collection(collectionWords).document("BLUE").delete()

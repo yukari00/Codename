@@ -62,16 +62,16 @@ class WaitingMembersFragment : Fragment() {
 
         listeningMembers = database.collection(dbCollection).document(keyword).collection("members").addSnapshotListener { it, e ->
             val memberList: MutableList<String> = mutableListOf()
+            val memberNameUidList = mutableListOf<Uid>()
 
             if (e != null) return@addSnapshotListener
 
             if(it == null || it.isEmpty) return@addSnapshotListener
             for (document in it) {
-                if(document.getString("member").isNullOrEmpty()){
-                    memberList.add(document.getString("name")!!)
-                }else{
-                    memberList.add(document.getString("member")!!)
-                }
+                val name = document.getString("name")?:""
+                val uid = document.id
+                memberList.add(name)
+                memberNameUidList.add(Uid(name, uid))
             }
             Log.d("memberList", "$memberList")
             text_member_join.setText(memberList.joinToString())
@@ -90,7 +90,7 @@ class WaitingMembersFragment : Fragment() {
             btn_go_back.setOnClickListener {
                 soundPool?.play2(soundIdButtonClicked)
                 when(status){
-                    Status.CREATE_ROOM -> deleteRoom(memberList)
+                    Status.CREATE_ROOM -> deleteRoom(memberNameUidList)
                     Status.JOIN_ROOM -> deleteMemberInfo()
                 }
 
@@ -129,7 +129,7 @@ class WaitingMembersFragment : Fragment() {
         }
     }
 
-    private fun deleteRoom(memberList: MutableList<String>) {
+    private fun deleteRoom(memberList: MutableList<Uid>) {
         AlertDialog.Builder(activity).apply {
             setTitle("注意")
             setMessage("ルーム作成者である${nickname}さんが退出した場合、ルームは削除され現在ルーム内に居る全プレイヤーが強制的に退出させられることになりますが、よろしいですか？")

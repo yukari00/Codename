@@ -8,7 +8,7 @@ interface OnFragmentListener {
     fun GameStart()
 
     //both
-    fun OnRoomDeleted(membersList: MutableList<String>)
+    fun OnRoomDeleted(membersList: MutableList<Uid>)
     fun OnMemberDeleted()
 
     //GameHostFragment

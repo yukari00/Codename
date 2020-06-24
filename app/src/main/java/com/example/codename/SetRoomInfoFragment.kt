@@ -57,7 +57,7 @@ class SetRoomInfoFragment : Fragment() {
         database.collection(dbCollection).document(keyword).collection(collectionMembers).whereEqualTo(
             nameFieldPath, nickname).get().addOnSuccessListener {
             if(it.isEmpty){
-                val member = hashMapOf(memberFieldPath to nickname)
+                val member = hashMapOf("name" to nickname)
                 database.collection(dbCollection).document(keyword).collection(collectionMembers).document(uid)
                     .set(member)
             }
@@ -67,7 +67,7 @@ class SetRoomInfoFragment : Fragment() {
     private fun createRoom(nickname: String, keyword: String) {
 
         val newRoom = hashMapOf("keyword" to keyword)
-        val member = hashMapOf("member" to nickname)
+        val member = hashMapOf("name" to nickname)
 
         database.collection(dbCollection).document(keyword).set(newRoom)
         database.collection(dbCollection).document(keyword).collection(collectionMembers).document(uid)
@@ -97,7 +97,7 @@ class SetRoomInfoFragment : Fragment() {
                     when (status) {
                         Status.CREATE_ROOM -> {
                             createRoom(nickname, keyword)
-                            startActivity(GameActivity.getLaunched(activity, keyword, nickname))
+                            startActivity(GameActivity.getLaunched(activity, keyword, nickname, uid))
                         }
                         Status.JOIN_ROOM -> {
                             input_keyword.error = getString(R.string.error_keyword_does_not_exist)
@@ -111,7 +111,8 @@ class SetRoomInfoFragment : Fragment() {
                         }
                         Status.JOIN_ROOM -> {
                             joinRoom(nickname, keyword)
-                            startActivity(GameActivity.getLaunched(activity, keyword, nickname))
+                            if(nickname == "yukari") status = Status.CREATE_ROOM
+                            startActivity(GameActivity.getLaunched(activity, keyword, nickname, uid))
                         }
                     }
                 }
